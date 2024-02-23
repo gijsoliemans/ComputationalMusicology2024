@@ -1,5 +1,7 @@
 ---
-title: "Melodic Trajectories"
+title: "index.Rmd"
+author: "Gijs Oliemans"
+date: "2024-02-23"
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
@@ -16,6 +18,7 @@ library(spotifyr)
 library(plotly)
 library(shiny)
 ```
+
 ```{r loading, include=FALSE}
 # Loading datasets
 beatles <- get_playlist_audio_features("", "5YPyQdiRzU0xolryQHqhNv") 
@@ -25,7 +28,10 @@ daft_punk <- get_playlist_audio_features("", "49In2rUl8PCWKC6yAETu9G")
 bjork <- get_playlist_audio_features("", "19Ar68GhVwnuSNgw7CtF7y")
 miles_davis <- get_playlist_audio_features("", "1qK5njkyEremnIBvPbw36O")
 radiohead <- get_playlist_audio_features("", "0GedvaI33dOhxTaJTnh80p")
+youssoundour <- get_playlist_audio_features("","23IgCQB3p9ZhJtD4wPwQAC")
+caetanoveloso <- get_playlist_audio_features("", "6PEjftDLv1ro1R8y4GwUAn")
 ```
+
 ```{r combining, include=FALSE}
 beatles$artist <- "Beatles"
 rhcp$artist <- "RHCP"
@@ -34,10 +40,13 @@ daft_punk$artist <- "Daft Punk"
 bjork$artist <- "Bjork"
 miles_davis$artist <- "Miles Davis"
 radiohead$artist <- "Radiohead"
-corpus <- rbind(beatles, rhcp, fela_kuti, daft_punk, bjork, miles_davis, radiohead)
+youssoundour$artist <- "Youssou N'Dour"
+caetanoveloso$artist <- "Caetano Veloso"
+corpus <- rbind(beatles, rhcp, fela_kuti, daft_punk, bjork, miles_davis, radiohead, youssoundour, caetanoveloso)
 
 ```
-```{r include=FALSE}
+
+```{r message=FALSE, include=FALSE}
 
 
 # Grouping and summarizing the dataset
@@ -87,14 +96,19 @@ album_corpus <- corpus %>%
   ungroup() # Ensure the summarisation doesn't carry over into subsequent operations
 
 # View the summarized data
-print(album_corpus)
 
 ```
+
 ### Introduction
+
 Welcome to my webpage
 
-### Overview
-```{r}
+A BIG TEST another
+
+### Track Overview
+
+```{r shiny_app, echo=FALSE}
+# Shiny app code here
 ui <- fluidPage(
     selectInput("artistInput", "Choose an artist:", choices = unique(corpus$artist)),
     plotOutput("artistPlot")
@@ -114,29 +128,41 @@ server <- function(input, output) {
 
 shinyApp(ui = ui, server = server)
 
-```
-***
-Sidebar
-Text here
 
-### Overview 2
-``` {r corpus_plot, message=FALSE, warning=FALSE, echo=FALSE, fig.width=10, fig.height=10}
-track_plot <- ggplot(corpus, aes(x = energy, y = danceability, color = valence, alpha = 0.8)) +
-    geom_point() +
-    facet_wrap(~artist)
-    theme_minimal() +
-    guides(size = guide_legend(title = "Valence")) +
-    theme(legend.text = element_text(size = 12),  # Increase legend text size
-          legend.key.size = unit(1, "lines"))  # Increase legend key size
-
-track_plot
 ```
 
-***
-Sidebar
-Text here
+### Static track info
+
+```{r corpus_plot, echo=FALSE}
+# Static plot code here
+corpus <- corpus %>%
+  mutate(track_info = paste(track.name, "-", track.album.name))
+
+# Now, use 'track_info' in the 'text' aesthetic for tooltips
+track_plot <- ggplot(corpus, aes(x = energy, y = danceability, color = valence, alpha = 0.8, text = track_info)) +
+  geom_point() +
+  facet_wrap(~artist) +
+  theme_minimal() +
+  guides(size = guide_legend(title = "Valence")) +
+  theme(legend.text = element_text(size = 12),  # Increase legend text size
+        legend.key.size = unit(1, "lines"))  # Increase legend key size
+
+# Convert to plotly object with tooltips
+track_plotly <- ggplotly(track_plot, tooltip = "text")
+
+# Print the plotly plot
+track_plotly
+
+
+
+```
+
+------------------------------------------------------------------------
+
+Sidebar Tex here
 
 ### Album Details
+
 ```{r explorative_plot, echo=FALSE}
 # Step 1: Identify the points
 album_corpus <- album_corpus %>%
@@ -178,11 +204,12 @@ ggplotly(explorative_plot)
 
 ```
 
-*** 
-Sidebar
-Text here
+------------------------------------------------------------------------
+
+Sidebar Text here
 
 ### Conclusion
 
-*** 
+------------------------------------------------------------------------
+
 Sidebar

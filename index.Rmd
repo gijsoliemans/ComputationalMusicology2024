@@ -102,15 +102,12 @@ album_corpus <- corpus %>%
 ```
 
 ### Introduction 
-testing
 
-This corpus encompasses a diverse array of music from seven artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, and Radiohead. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, and alternative, representing significant periods and shifts in the music industry. This selection aims to facilitate an analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
+This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
 
-Structured by artist, the corpus allows for comparisons of musical styles and thematic exploration. The Beatles and RHCP showcase the development of rock and its subgenres. In contrast, Fela Kuti and Miles Davis provide a perspective on Afrobeat and jazz, highlighting rhythmic complexity. Daft Punk and Björk push the boundaries of electronic music with innovative soundscapes, while Radiohead's work demonstrates a fusion of rock with electronic elements.
+The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
 
-The collection includes tracks that typify each artist's style, alongside those that diverge from their usual sound, offering a broad spectrum for analysis. This selection process considers the availability of tracks on Spotify, acknowledging potential limitations due to missing significant works, especially for artists like Fela Kuti. The variability between live and studio recordings, particularly for Miles Davis, also presents an analytical dimension, reflecting performance's impact on musical interpretation.
-
-This corpus is not super extensive but is designed to uncover trends, contrasts, and the dynamic interplay between music and its broader cultural setting. Through this lens, the corpus aims to contribute to a deeper understanding of how music reflects and shapes the zeitgeist.
+The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
 
 ### Artist overview
 
@@ -130,6 +127,7 @@ treemap(artist_data,
         palette = "Set3")
 
 ```
+
 
 ### Corpus track info
 
@@ -204,13 +202,16 @@ ggplotly(explorative_plot)
 
 ```
 
-### Chroma Details
+### Chroma 
 
+
+### Dynamic Time Warping 
 
 
 ------------------------------------------------------------------------
 
-Sidebar Text here
+sidebar
+
 
 ### Conclusion
 

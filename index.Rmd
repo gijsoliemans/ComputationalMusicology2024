@@ -113,8 +113,7 @@ This corpus is not super extensive but is designed to uncover trends, contrasts,
 
 ### Artist overview
 
-
-```{r boxplot, echo=FALSE, fig_width=5,fig.height=4}
+```{r overview, echo=FALSE, fig_width=5,fig.height=4}
 artist_data <- corpus %>%
   mutate(track_duration = track.duration_ms / 60000) %>%
   group_by(artist) %>%

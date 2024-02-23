@@ -1,0 +1,188 @@
+---
+title: "Melodic Trajectories"
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    theme: bootstrap
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(spotifyr)
+library(plotly)
+library(shiny)
+```
+```{r loading, include=FALSE}
+# Loading datasets
+beatles <- get_playlist_audio_features("", "5YPyQdiRzU0xolryQHqhNv") 
+rhcp <- get_playlist_audio_features("", "04rfJgMUHRVg3d7iL3dLPU")
+fela_kuti <- get_playlist_audio_features("", "7kdOWMLqjh2nfBPqvZ6zGd")
+daft_punk <- get_playlist_audio_features("", "49In2rUl8PCWKC6yAETu9G")
+bjork <- get_playlist_audio_features("", "19Ar68GhVwnuSNgw7CtF7y")
+miles_davis <- get_playlist_audio_features("", "1qK5njkyEremnIBvPbw36O")
+radiohead <- get_playlist_audio_features("", "0GedvaI33dOhxTaJTnh80p")
+```
+```{r combining, include=FALSE}
+beatles$artist <- "Beatles"
+rhcp$artist <- "RHCP"
+fela_kuti$artist <- "Fela Kuti"
+daft_punk$artist <- "Daft Punk"
+bjork$artist <- "Bjork"
+miles_davis$artist <- "Miles Davis"
+radiohead$artist <- "Radiohead"
+corpus <- rbind(beatles, rhcp, fela_kuti, daft_punk, bjork, miles_davis, radiohead)
+
+```
+```{r include=FALSE}
+
+
+# Grouping and summarizing the dataset
+album_corpus <- corpus %>%
+  group_by(artist, track.album.name, track.album.release_date) %>%
+  summarise(
+    danceability_min = min(danceability, na.rm = TRUE),
+    danceability_max = max(danceability, na.rm = TRUE),
+    danceability_median = median(danceability, na.rm = TRUE),
+    danceability_mean = mean(danceability, na.rm = TRUE),
+    
+    energy_min = min(energy, na.rm = TRUE),
+    energy_max = max(energy, na.rm = TRUE),
+    energy_median = median(energy, na.rm = TRUE),
+    energy_mean = mean(energy, na.rm = TRUE),
+    
+    loudness_min = min(loudness, na.rm = TRUE),
+    loudness_max = max(loudness, na.rm = TRUE),
+    loudness_median = median(loudness, na.rm = TRUE),
+    loudness_mean = mean(loudness, na.rm = TRUE),
+    
+    speechiness_min = min(speechiness, na.rm = TRUE),
+    speechiness_max = max(speechiness, na.rm = TRUE),
+    speechiness_median = median(speechiness, na.rm = TRUE),
+    speechiness_mean = mean(speechiness, na.rm = TRUE),
+    
+    acousticness_min = min(acousticness, na.rm = TRUE),
+    acousticness_max = max(acousticness, na.rm = TRUE),
+    acousticness_median = median(acousticness, na.rm = TRUE),
+    acousticness_mean = mean(acousticness, na.rm = TRUE),
+    
+    liveness_min = min(liveness, na.rm = TRUE),
+    liveness_max = max(liveness, na.rm = TRUE),
+    liveness_median = median(liveness, na.rm = TRUE),
+    liveness_mean = mean(liveness, na.rm = TRUE),
+    
+    valence_min = min(valence, na.rm = TRUE),
+    valence_max = max(valence, na.rm = TRUE),
+    valence_median = median(valence, na.rm = TRUE),
+    valence_mean = mean(valence, na.rm = TRUE),
+    
+    tempo_min = min(tempo, na.rm = TRUE),
+    tempo_max = max(tempo, na.rm = TRUE),
+    tempo_median = median(tempo, na.rm = TRUE),
+    tempo_mean = mean(tempo, na.rm = TRUE)
+  ) %>%
+  ungroup() # Ensure the summarisation doesn't carry over into subsequent operations
+
+# View the summarized data
+print(album_corpus)
+
+```
+### Introduction
+Welcome to my webpage
+
+### Overview
+```{r}
+ui <- fluidPage(
+    selectInput("artistInput", "Choose an artist:", choices = unique(corpus$artist)),
+    plotOutput("artistPlot")
+)
+
+server <- function(input, output) {
+    output$artistPlot <- renderPlot({
+        filtered_corpus <- corpus[corpus$artist == input$artistInput, ]
+        ggplot(filtered_corpus, aes(x = energy, y = danceability, color = valence, alpha = 0.8)) +
+            geom_point() +
+            theme_minimal() +
+            guides(size = guide_legend(title = "Valence")) +
+            theme(legend.text = element_text(size = 12),
+                  legend.key.size = unit(1, "lines"))
+    })
+}
+
+shinyApp(ui = ui, server = server)
+
+```
+***
+Sidebar
+Text here
+
+### Overview 2
+``` {r corpus_plot, message=FALSE, warning=FALSE, echo=FALSE, fig.width=10, fig.height=10}
+track_plot <- ggplot(corpus, aes(x = energy, y = danceability, color = valence, alpha = 0.8)) +
+    geom_point() +
+    facet_wrap(~artist)
+    theme_minimal() +
+    guides(size = guide_legend(title = "Valence")) +
+    theme(legend.text = element_text(size = 12),  # Increase legend text size
+          legend.key.size = unit(1, "lines"))  # Increase legend key size
+
+track_plot
+```
+
+***
+Sidebar
+Text here
+
+### Album Details
+```{r explorative_plot, echo=FALSE}
+# Step 1: Identify the points
+album_corpus <- album_corpus %>%
+  mutate(combination = energy_mean + danceability_mean) %>%
+  arrange(combination) %>%
+  mutate(label_position = case_when(
+    row_number() == 1 ~ "Lowest",
+    row_number() == n() ~ "Highest",
+    TRUE ~ NA_character_
+  ))
+
+# Prepare the label text
+album_corpus$label_text <- ifelse(
+  !is.na(album_corpus$label_position),
+  paste(album_corpus$artist, album_corpus$track.album.name, sep = ", "),
+  NA
+)
+
+# Step 2: Plot with annotations
+explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = danceability_mean, color = artist)) +
+    geom_point(aes(alpha = 0.4, size = valence_mean)) +
+    geom_text(data = filter(album_corpus, !is.na(label_text)), 
+                aes(label = label_text), 
+                nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
+                check_overlap = TRUE, 
+                size = 2) +  # Adjust label size
+    labs(title = "Energy vs. Danceability colored by Artist with Valence Size",
+         x = "Energy",
+         y = "Danceability",
+         color = "Artist",
+         size = "Valence",
+         alpha = "Alpha") +
+    theme_minimal() +
+    guides(size = guide_legend(title = "Valence")) +
+    theme(legend.text = element_text(size = 12),  # Increase legend text size
+          legend.key.size = unit(1, "lines"))  # Increase legend key size
+
+ggplotly(explorative_plot)
+
+```
+
+*** 
+Sidebar
+Text here
+
+### Conclusion
+
+*** 
+Sidebar

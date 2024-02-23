@@ -101,7 +101,8 @@ album_corpus <- corpus %>%
 
 ```
 
-### Introduction
+### Introduction 
+testing
 
 This corpus encompasses a diverse array of music from seven artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, and Radiohead. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, and alternative, representing significant periods and shifts in the music industry. This selection aims to facilitate an analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
 

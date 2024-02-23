@@ -1,15 +1,16 @@
 ---
-title: "index.Rmd"
+title: "Melodic Trajectories"
 author: "Gijs Oliemans"
-date: "2024-02-23"
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
-    theme: bootstrap
 runtime: shiny
 ---
 
+
+
 ```{r setup, include=FALSE}
+
 library(flexdashboard)
 library(dplyr)
 library(tidyverse)
@@ -17,6 +18,7 @@ library(lubridate)
 library(spotifyr)
 library(plotly)
 library(shiny)
+library(treemap)
 ```
 
 ```{r loading, include=FALSE}
@@ -101,39 +103,37 @@ album_corpus <- corpus %>%
 
 ### Introduction
 
-Welcome to my webpage
+This corpus encompasses a diverse array of music from seven artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, and Radiohead. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, and alternative, representing significant periods and shifts in the music industry. This selection aims to facilitate an analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
 
-A BIG TEST another
+Structured by artist, the corpus allows for comparisons of musical styles and thematic exploration. The Beatles and RHCP showcase the development of rock and its subgenres. In contrast, Fela Kuti and Miles Davis provide a perspective on Afrobeat and jazz, highlighting rhythmic complexity. Daft Punk and Björk push the boundaries of electronic music with innovative soundscapes, while Radiohead's work demonstrates a fusion of rock with electronic elements.
 
-### Track Overview
+The collection includes tracks that typify each artist's style, alongside those that diverge from their usual sound, offering a broad spectrum for analysis. This selection process considers the availability of tracks on Spotify, acknowledging potential limitations due to missing significant works, especially for artists like Fela Kuti. The variability between live and studio recordings, particularly for Miles Davis, also presents an analytical dimension, reflecting performance's impact on musical interpretation.
 
-```{r shiny_app, echo=FALSE}
-# Shiny app code here
-ui <- fluidPage(
-    selectInput("artistInput", "Choose an artist:", choices = unique(corpus$artist)),
-    plotOutput("artistPlot")
-)
+This corpus is not super extensive but is designed to uncover trends, contrasts, and the dynamic interplay between music and its broader cultural setting. Through this lens, the corpus aims to contribute to a deeper understanding of how music reflects and shapes the zeitgeist.
 
-server <- function(input, output) {
-    output$artistPlot <- renderPlot({
-        filtered_corpus <- corpus[corpus$artist == input$artistInput, ]
-        ggplot(filtered_corpus, aes(x = energy, y = danceability, color = valence, alpha = 0.8)) +
-            geom_point() +
-            theme_minimal() +
-            guides(size = guide_legend(title = "Valence")) +
-            theme(legend.text = element_text(size = 12),
-                  legend.key.size = unit(1, "lines"))
-    })
-}
+### Artist overview
 
-shinyApp(ui = ui, server = server)
 
+```{r boxplot, echo=FALSE, fig_width=5,fig.height=4}
+artist_data <- corpus %>%
+  mutate(track_duration = track.duration_ms / 60000) %>%
+  group_by(artist) %>%
+  summarize(
+    track_count = n(),  # Count of tracks per artist
+    average_duration = mean(track_duration)  # Optional: average duration of tracks per artist
+  )
+
+treemap(artist_data,
+        index = "artist",
+        vSize = "track_count",
+        title = "Catalog Size by Artist",
+        palette = "Set3")
 
 ```
 
-### Static track info
+### Corpus track info
 
-```{r corpus_plot, echo=FALSE}
+```{r treemap, echo=FALSE}
 # Static plot code here
 corpus <- corpus %>%
   mutate(track_info = paste(track.name, "-", track.album.name))
@@ -161,7 +161,7 @@ track_plotly
 
 Sidebar Tex here
 
-### Album Details
+### Corpus album Details
 
 ```{r explorative_plot, echo=FALSE}
 # Step 1: Identify the points
@@ -203,6 +203,10 @@ explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = danceability_m
 ggplotly(explorative_plot)
 
 ```
+
+### Chroma Details
+
+
 
 ------------------------------------------------------------------------
 

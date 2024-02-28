@@ -20,6 +20,7 @@ library(plotly)
 library(shiny)
 library(treemap)
 library(compmus)
+library(cowplot)
 ```
 
 ```{r loading, include=FALSE}
@@ -48,9 +49,15 @@ caetanoveloso$artist <- "Caetano Veloso"
 corpus <- rbind(beatles, rhcp, fela_kuti, daft_punk, bjork, miles_davis, radiohead, youssoundour, caetanoveloso)
 
 ```
+```{r basic transformations }
+# basic data transformations
+corpus <- corpus %>%
+  mutate(track_info = paste(track.name, "-", track.album.name))
 
-```{r message=FALSE, include=FALSE}
+```
 
+```{r album_corpus , message=FALSE, include=FALSE}
+# corpus grouped by albums
 
 # Grouping and summarizing the dataset
 album_corpus <- corpus %>%
@@ -102,6 +109,30 @@ album_corpus <- corpus %>%
 
 ```
 
+```{r artist_data, include=FALSE} 
+# corpus grouped by artists (for treemap)
+artist_data <- corpus %>%
+  mutate(track_duration = track.duration_ms / 60000) %>%
+  group_by(artist) %>%
+  summarize(
+    track_count = n(),  # Count of tracks per artist
+    average_duration = mean(track_duration)  # Optional: average duration of tracks per artist
+  )
+```
+
+```{r outliers, include=FALSE}
+corpus_arranged <- corpus %>%
+  filter(track.duration_ms >= 12000) %>%
+  mutate(combination = energy + valence) %>%
+  arrange(combination) %>%
+  mutate(label_position = case_when(
+    row_number() == 1 ~ "Lowest",
+    row_number() == n() ~ "Highest",
+    TRUE ~ NA_character_
+  ))
+
+```
+
 ### Introduction 
 
 On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
@@ -115,57 +146,19 @@ The albums selected showcase each artist's characteristic style and include trac
 ### Artist overview
 
 ```{r treemap_overview, echo=FALSE, fig_width=5,fig.height=4}
-artist_data <- corpus %>%
-  mutate(track_duration = track.duration_ms / 60000) %>%
-  group_by(artist) %>%
-  summarize(
-    track_count = n(),  # Count of tracks per artist
-    average_duration = mean(track_duration)  # Optional: average duration of tracks per artist
-  )
-
 treemap(artist_data,
         index = "artist",
         vSize = "track_count",
         title = "Catalog Size by Artist",
         palette = "Set3")
-
 ```
 
-
-### Corpus track info
-
-```{r overview, echo=FALSE}
-# Static plot code here
-corpus <- corpus %>%
-  mutate(track_info = paste(track.name, "-", track.album.name))
-
-# Now, use 'track_info' in the 'text' aesthetic for tooltips
-track_plot <- ggplot(corpus, aes(x = energy, y = danceability, color = valence, text = track_info, alpha = 0.8)) +
-  geom_point() +
-  facet_wrap(~artist) +
-  labs(title = "Danceability vs Energy colored by valence per artist", # Add your title here
-       color = "Valence") + # Title for the color scale
-  theme_minimal() +
-  guides(alpha = FALSE) + # Optionally, remove the alpha guide if not needed
-  theme(legend.text = element_text(size = 12),  # Increase legend text size
-        legend.key.size = unit(1, "lines"))  # Increase legend key size
-
-# Convert to plotly object with tooltips
-track_plotly <- ggplotly(track_plot, tooltip = "text")
-
-# Print the plotly plot
-track_plotly
-
-
-```
-
-
-### Corpus album Details
+### Which artist has the highest valence?
 
 ```{r explorative_plot, echo=FALSE}
 # Step 1: Identify the points
 album_corpus <- album_corpus %>%
-  mutate(combination = energy_mean + danceability_mean) %>%
+  mutate(combination = energy_mean + valence_mean) %>%
   arrange(combination) %>%
   mutate(label_position = case_when(
     row_number() == 1 ~ "Lowest",
@@ -181,18 +174,18 @@ album_corpus$label_text <- ifelse(
 )
 
 # Step 2: Plot with annotations
-explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = danceability_mean, color = artist)) +
-    geom_point(aes(alpha = 0.4, size = valence_mean)) +
+explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = valence_mean, color = artist)) +
+    geom_point(aes(alpha = 0.4, size = danceability_mean)) +
     geom_text(data = filter(album_corpus, !is.na(label_text)), 
                 aes(label = label_text), 
                 nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
                 check_overlap = TRUE, 
                 size = 2) +  # Adjust label size
-    labs(title = "Energy vs. Danceability colored by Artist with Valence Size",
+    labs(title = "Energy vs. valence colored by Artist with danceability Size",
          x = "Energy",
-         y = "Danceability",
+         y = "Valence",
          color = "Artist",
-         size = "Valence",
+         size = "Danceability",
          alpha = "Alpha") +
     theme_minimal() +
     guides(size = guide_legend(title = "Valence")) +
@@ -209,19 +202,32 @@ The plot included in this repository displays the distribution of track descript
 
 Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
 
+### Detailed artist overview
 
-### Least energetic & danceable track
-```{r outliers, include=FALSE}
-corpus_arranged <- corpus %>%
-  filter(track.duration_ms >= 12000) %>%
-  mutate(combination = energy + danceability) %>%
-  arrange(combination) %>%
-  mutate(label_position = case_when(
-    row_number() == 1 ~ "Lowest",
-    row_number() == n() ~ "Highest",
-    TRUE ~ NA_character_
-  ))
+```{r overview, echo=FALSE}
+# Static plot code here
+# Now, use 'track_info' in the 'text' aesthetic for tooltips
+track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = danceability, text = track_info, alpha = 0.8)) +
+  geom_point() +
+  facet_wrap(~artist) +
+  labs(title = "Valence vs Energy colored by danceability per artist", 
+       color = "Danceability") + # Title for the color scale
+  theme_minimal() +
+  guides(alpha = FALSE) + # Optionally, remove the alpha guide if not needed
+  theme(legend.text = element_text(size = 12),  # Increase legend text size
+        legend.key.size = unit(1, "lines"))  # Increase legend key size
 
+# Convert to plotly object with tooltips
+track_plotly <- ggplotly(track_plot, tooltip = "text")
+
+# Print the plotly plot
+track_plotly
+
+
+```
+
+### How do the chroma features look like for outliers in my corpus?
+```{r data_setup, include=FALSE}
 # Extracting track.id for Lowest combination
 lowest_track_id <- corpus_arranged %>%
   filter(label_position == "Lowest") %>%
@@ -243,24 +249,25 @@ highest_track_name_album <- corpus_arranged %>%
   filter(label_position == "Highest") %>%
   mutate(combined_info = paste(track_info, artist, sep = " - ")) %>%
   pull(combined_info)
+```
 
-lowest <-
+
+```{r chroma_lowest, echo=FALSE, fig.width=11, fig.height=8}
+lowest_energy_valence <-
   get_tidy_audio_analysis(lowest_track_id) |>
   select(segments) |>
   unnest(segments) |>
   select(start, duration, pitches)
 
-highest <-
+highest_energy_valence <-
   get_tidy_audio_analysis(highest_track_id) |>
   select(segments) |>
   unnest(segments) |>
   select(start, duration, pitches)
 
-```
-
-
-```{r chroma_lowest, echo=FALSE, fig.width=11, fig.height=8}
-lowest |>
+##### Chromagrams
+lowest_energy_valence_chromagram <-
+  lowest_energy_valence |>
   mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
   compmus_gather_chroma() |> 
   ggplot(
@@ -276,18 +283,8 @@ lowest |>
   theme_minimal() +
   scale_fill_viridis_c()
 
-
-```
-
-------------------------------------------------------------------------
-
-The visual on the left displays the chromatic analysis on the **least** energetic and danceable track in this corpus. We see a wide diversity of pitch classes and magnitude throughout the whole song, typical for a jazz song. When comparing the analysis with the **most** energetic and danceable track we see a difference in the diversity of pitch class occurances, where the Miles Davis track has a significant higher diversity in pitch class and a larger range of magnitude per pitch class.
-
-
-### Most energetic & danceable track  
-```{r chroma_highest, echo=FALSE, fig.width=11, fig.height=8}
-
-highest |>
+highest_energy_valence_chromagram <-
+  highest_energy_valence |>
   mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
   compmus_gather_chroma() |> 
   ggplot(
@@ -302,9 +299,142 @@ highest |>
   labs(title= highest_track_name_album,x = "Time (s)", y = NULL, fill = "Magnitude") +
   theme_minimal() +
   scale_fill_viridis_c()
+
+
+
+
+plot_grid(lowest_energy_valence_chromagram, highest_energy_valence_chromagram, ncol=1)
 ```
 
 
 ------------------------------------------------------------------------
 
-The visual on the left displays the chromatic analysis on the **most** energetic and danceable track in this corpus. We see a smaller diversity of pitch classes throughout the whole song, but a bigger magnitude for most of the pitch classes. Upon listening it became clear why, and I highly recommend you to also take a quick listen to the song. Throughout the whole song, Daft Punk used a synthesizer playing 1 note at a time, but with a lot of resonance. By controlling the amount of resonance, harmonic frequencies were created. There were however so much harmonics that they covered the all pitch classes, resulting in a small diversity of pitch class occurences in the chroma analysis. When comparing the analysis with the **least** energetic and danceable track we see a difference in the diversity of pitch class occurences, where Homework from Daft Punk has a significant lower diversity in pitch class and a smaller range of magnitude. 
+
+
+### Self Similarity
+```{r data_setting_up}
+# Extracting track.id for Lowest combination
+lowest_track_id <- corpus_arranged %>%
+  filter(label_position == "Lowest") %>%
+  pull(track.id)
+
+# Extracting track.id for Highest combination
+highest_track_id <- corpus_arranged %>%
+  filter(label_position == "Highest") %>%
+  pull(track.id)
+
+# Extracting track info for Lowest combination
+lowest_track_name_album <- corpus_arranged %>%
+  filter(label_position == "Lowest") %>%
+  mutate(combined_info = paste(track_info, artist, sep = " - ")) %>%
+  pull(combined_info)
+
+# Extracting track info for Highest combination
+highest_track_name_album <- corpus_arranged %>%
+  filter(label_position == "Highest") %>%
+  mutate(combined_info = paste(track_info, artist, sep = " - ")) %>%
+  pull(combined_info)
+```
+
+```{r selfsimilarity, echo=FALSE}
+lowest_track <-
+  get_tidy_audio_analysis(lowest_track_id) |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+highest_track <-
+  get_tidy_audio_analysis(lowest_track_id) |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+
+##
+bind_rows(
+  lowest_track |> 
+    compmus_self_similarity(pitches, "aitchison") |> 
+    mutate(d = d / max(d), type = "Chroma"),
+  lowest_track |> 
+    compmus_self_similarity(timbre, "euclidean") |> 
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |> 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(option = "E", guide = "none") +
+  theme_classic() + 
+  labs(x = "", y = "")
+
+# ## Highest
+bind_rows(
+  highest_track |>
+    compmus_self_similarity(pitches, "aitchison") |>
+    mutate(d = d / max(d), type = "Chroma"),
+  highest_track |>
+    compmus_self_similarity(timbre, "euclidean") |>
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |>
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(option = "E", guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+
+### testing
+```{r}
+
+```
+
+
+
+
+

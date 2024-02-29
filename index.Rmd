@@ -490,21 +490,22 @@ Upon a close look of the plot, the albums of each artist seem to cluster both to
 ```{r overview, echo=FALSE}
 # Static plot code here
 # Now, use 'track_info' in the 'text' aesthetic for tooltips
-track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = danceability, text = track_info, alpha = 0.8)) +
+track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
   geom_point() +
   facet_wrap(~artist) +
-  labs(title = "Valence vs Energy colored by danceability per artist", 
-       color = "Danceability") + # Title for the color scale
+  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
   theme_minimal() +
   guides(alpha = FALSE) + # Optionally, remove the alpha guide if not needed
   theme(legend.text = element_text(size = 12),  # Increase legend text size
-        legend.key.size = unit(1, "lines"))  # Increase legend key size
+        legend.key.size = unit(1, "lines"),  # Increase legend key size
+        legend.position = "none")  # Remove the legend
 
 # Convert to plotly object with tooltips
 track_plotly <- ggplotly(track_plot, tooltip = "text")
 
 # Print the plotly plot
 track_plotly
+
 
 
 ```

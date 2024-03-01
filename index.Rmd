@@ -217,9 +217,14 @@ plot_grid(lowest_energy_valence_chromagram, highest_energy_valence_chromagram,
 )
 ```
 
+***
+In the two graphs on the left side, two tracks are displayed. These tracks are outliers in my corpus, selected based on a combination of two factors: the Valence & Energy scores assigned by Spotify. I've chosen these types of outliers to explore the relationship between pitch classes and their occurrences with the Valence & Energy scores from Spotify.
 
+The first chromagram displays a song with the lowest combination of valence & energy. In this song by Miles Davis, we see an overall absence of pitch classes, with a strong occurrence of a few (3-4) pitch classes.
 
+In comparison with the lower chromagram, which displays a song with the highest combination of valence & energy, we see a higher occurrence of pitch classes (9-11) throughout the whole song. This energetic song by Youssou N'Dour is typical for the Mbalax genre, known for its fast-stroking percussion, as also present in this song. The percussion would explain the diversity in occurrences of pitch classes.
 
+Overall, we could argue that the presence of a high diversity in pitch classes triggers Spotify to assign a higher Valence & Energy score.
 
 ### Self Similarity
 ```{r data_setting_up}
@@ -395,7 +400,22 @@ plot_grid(
 ```
 
 ***
-Here we see a sidebar
+These 4 graphs display the pitch and timbre self-similarity matrix of the same two songs as discussed in the "Chroma features" slide. Row "A" displays the matrices for the song by Miles Davis. Row "B" displays the matrices for the song by Youssou N'Dour.
+
+*Row A*
+
+For the song with the lowest combination of energy & valence, we see a clear overview of the structure of the song in both the chroma- and timbre-based self-similarity matrices. For both matrices, one could count 4-5 different parts throughout the song.
+
+*Row B*
+
+For the song with the highest combination of energy & valence, we see a notable difference in the chroma- and timbre-based self-similarity matrices. For the chroma-based matrix, there is no recognizable structure throughout the song. I think this is due to the fact of the percussion parts in this song, which provide a high diversity in pitch classes (due to their timbre and overtones) and therefore clutter the pitch class data. For the timbre-based matrix, clear structured parts of the song are recognizable.
+
+Overall, we can argue that a high diversity in pitch classes can clutter the self-similarity matrix of a song, while timbre can still clearly display the structure of the same song. For a song with a lower diversity in pitch classes, this is less of a problem, and both chroma- and timbre-based self-similarity matrices display the same structure of a song.
+
+
+
+
+
 
 ### Introduction 
 ```{r intro_overview, echo=FALSE}

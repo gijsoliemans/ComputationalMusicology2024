@@ -4,7 +4,6 @@ author: "Gijs Oliemans"
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
-runtime: shiny
 ---
 
 
@@ -219,7 +218,6 @@ plot_grid(lowest_energy_valence_chromagram, highest_energy_valence_chromagram,
 ```
 
 
-------------------------------------------------------------------------
 
 
 

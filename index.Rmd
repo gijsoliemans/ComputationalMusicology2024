@@ -226,7 +226,7 @@ In comparison with the lower chromagram, which displays a song with the highest 
 
 Overall, we could argue that the presence of a high diversity in pitch classes triggers Spotify to assign a higher Valence & Energy score.
 
-### Self Similarity
+### What does the structure of these outliers look like in self similarity matrices?
 ```{r data_setting_up}
 # Extracting track.id for Lowest combination
 lowest_track_id <- corpus_arranged %>%

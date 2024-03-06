@@ -4,6 +4,8 @@ author: "Gijs Oliemans"
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
+    orientation: rows
+    self_contained: false
 ---
 
 
@@ -135,7 +137,153 @@ corpus_arranged <- corpus %>%
   ))
 
 ```
-### How do the chroma features look like for outliers in my corpus?
+# Introduction {.storyboard data-navmenu=Introduction}
+### Introduction  
+```{r intro_overview, echo=FALSE}
+
+
+```
+
+On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
+
+This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
+
+The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
+
+The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
+
+### Artist overview
+
+```{r treemap_overview, echo=FALSE, fig_width=5,fig.height=4}
+# Create a ggplot object
+p <- ggplot(artist_data, aes(x = reorder(artist, track_count), y = track_count)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(x = "Artist Name", y = "Catalog Size", title = "Catalog Size of Artists") +
+  coord_flip() # Flipping coordinates for better readability
+
+
+
+
+boxplot <- ggplot(artist_data, aes(x = artist, y = track_duration)) +
+              geom_boxplot() +
+              theme_minimal() +
+              labs(x = "Artist", y = "Track Length (minutes)", title = "Track Length Distribution Across Artists") +
+              theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate artist names for readability
+
+plot_grid(p, boxplot,
+          nrow= 2)
+```
+
+### Which artist has the highest valence?
+
+```{r explorative_plot, echo=FALSE}
+# Step 1: Identify the points
+album_corpus <- album_corpus %>%
+  mutate(combination = energy_mean + valence_mean) %>%
+  arrange(combination) %>%
+  mutate(label_position = case_when(
+    row_number() == 1 ~ "Lowest",
+    row_number() == n() ~ "Highest",
+    TRUE ~ NA_character_
+  ))
+
+# Prepare the label text
+album_corpus$label_text <- ifelse(
+  !is.na(album_corpus$label_position),
+  paste(album_corpus$artist, album_corpus$track.album.name, sep = ", "),
+  NA
+)
+
+# Step 2: Plot with annotations
+explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = valence_mean, color = artist)) +
+    geom_point(aes(alpha = 0.4, size = danceability_mean)) +
+    geom_text(data = filter(album_corpus, !is.na(label_text)), 
+                aes(label = label_text), 
+                nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
+                check_overlap = TRUE, 
+                size = 2) +  # Adjust label size
+    labs(title = "Energy vs. valence colored by Artist with danceability Size",
+         x = "Energy",
+         y = "Valence",
+         color = "Artist",
+         size = "Danceability",
+         alpha = "Alpha") +
+    theme_minimal() +
+    guides(size = guide_legend(title = "Valence")) +
+    theme(legend.text = element_text(size = 12),  # Increase legend text size
+          legend.key.size = unit(1, "lines"))  # Increase legend key size
+
+ggplotly(explorative_plot)
+
+```
+
+***
+
+The plot included in this repository displays the distribution of track descriptives (energy, danceability and valence) of the selected corpus, grouped by albums where artists are displayed with color. All the data is extracted with the Spotify API by combining self constructed playlists. Each playlist contained all the studio album recordings of an artist, live recordings were ignored in this dataset.
+
+Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
+
+### Detailed artist overview
+
+```{r overview, echo=FALSE}
+# Static plot code here
+# Now, use 'track_info' in the 'text' aesthetic for tooltips
+track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
+  geom_point() +
+  facet_wrap(~artist) +
+  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
+  theme_minimal() +
+  guides(alpha = FALSE) + # Optionally, remove the alpha guide if not needed
+  theme(legend.text = element_text(size = 12),  # Increase legend text size
+        legend.key.size = unit(1, "lines"),  # Increase legend key size
+        legend.position = "none")  # Remove the legend
+
+# Convert to plotly object with tooltips
+track_plotly <- ggplotly(track_plot, tooltip = "text")
+
+# Print the plotly plot
+track_plotly
+
+
+
+```
+
+# How much do artists adhere to their albums? {.storyboard data-navmenu=Introduction}
+### This will be a page
+
+# Artists {.storyboard data-navmenu="Musical Journey"}
+### About page
+```{r}
+1+1
+```
+
+### Music
+```{r}
+1+1
+```
+
+# Beatles {.storyboard data-navmenu="Musical Journey"}
+
+# Björk {.storyboard data-navmenu="Musical Journey"}
+
+# Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
+
+# Daft Punk {.storyboard data-navmenu="Musical Journey"}
+
+# Fela Kuti {.storyboard data-navmenu="Musical Journey"}
+
+# Miles Davis {.storyboard data-navmenu="Musical Journey"}
+
+# Radiohead {.storyboard data-navmenu="Musical Journey"}
+
+# RHCP {.storyboard data-navmenu="Musical Journey"}
+
+# Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
+
+# How do two outliers of my corpus look like? (w9){.storyboard data-navmenu=Homework} 
+
+### How doe the chroma features look like?
 ```{r data_setup, include=FALSE}
 # Extracting track.id for Lowest combination
 lowest_track_id <- corpus_arranged %>%
@@ -417,172 +565,161 @@ Overall, we can argue that a high diversity in pitch classes can clutter the sel
 
 
 
-### Introduction 
-```{r intro_overview, echo=FALSE}
 
+# Keygrams (w10) {.storyboard data-navmenu=Homework} 
+### Keygrams
+```{r chord_template, include=FALSE}
+circshift <- function(v, n) {
+  if (n == 0) v else c(tail(v, n), head(v, -n))
+}
 
+#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
+major_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
+minor_chord <-
+  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
+seventh_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
+
+major_key <-
+  c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
+minor_key <-
+  c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
+
+chord_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:7", circshift(seventh_chord, 6),
+    "Gb:maj", circshift(major_chord, 6),
+    "Bb:min", circshift(minor_chord, 10),
+    "Db:maj", circshift(major_chord, 1),
+    "F:min", circshift(minor_chord, 5),
+    "Ab:7", circshift(seventh_chord, 8),
+    "Ab:maj", circshift(major_chord, 8),
+    "C:min", circshift(minor_chord, 0),
+    "Eb:7", circshift(seventh_chord, 3),
+    "Eb:maj", circshift(major_chord, 3),
+    "G:min", circshift(minor_chord, 7),
+    "Bb:7", circshift(seventh_chord, 10),
+    "Bb:maj", circshift(major_chord, 10),
+    "D:min", circshift(minor_chord, 2),
+    "F:7", circshift(seventh_chord, 5),
+    "F:maj", circshift(major_chord, 5),
+    "A:min", circshift(minor_chord, 9),
+    "C:7", circshift(seventh_chord, 0),
+    "C:maj", circshift(major_chord, 0),
+    "E:min", circshift(minor_chord, 4),
+    "G:7", circshift(seventh_chord, 7),
+    "G:maj", circshift(major_chord, 7),
+    "B:min", circshift(minor_chord, 11),
+    "D:7", circshift(seventh_chord, 2),
+    "D:maj", circshift(major_chord, 2),
+    "F#:min", circshift(minor_chord, 6),
+    "A:7", circshift(seventh_chord, 9),
+    "A:maj", circshift(major_chord, 9),
+    "C#:min", circshift(minor_chord, 1),
+    "E:7", circshift(seventh_chord, 4),
+    "E:maj", circshift(major_chord, 4),
+    "G#:min", circshift(minor_chord, 8),
+    "B:7", circshift(seventh_chord, 11),
+    "B:maj", circshift(major_chord, 11),
+    "D#:min", circshift(minor_chord, 3)
+  )
+
+key_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:maj", circshift(major_key, 6),
+    "Bb:min", circshift(minor_key, 10),
+    "Db:maj", circshift(major_key, 1),
+    "F:min", circshift(minor_key, 5),
+    "Ab:maj", circshift(major_key, 8),
+    "C:min", circshift(minor_key, 0),
+    "Eb:maj", circshift(major_key, 3),
+    "G:min", circshift(minor_key, 7),
+    "Bb:maj", circshift(major_key, 10),
+    "D:min", circshift(minor_key, 2),
+    "F:maj", circshift(major_key, 5),
+    "A:min", circshift(minor_key, 9),
+    "C:maj", circshift(major_key, 0),
+    "E:min", circshift(minor_key, 4),
+    "G:maj", circshift(major_key, 7),
+    "B:min", circshift(minor_key, 11),
+    "D:maj", circshift(major_key, 2),
+    "F#:min", circshift(minor_key, 6),
+    "A:maj", circshift(major_key, 9),
+    "C#:min", circshift(minor_key, 1),
+    "E:maj", circshift(major_key, 4),
+    "G#:min", circshift(minor_key, 8),
+    "B:maj", circshift(major_key, 11),
+    "D#:min", circshift(minor_key, 3)
+  )
 ```
 
-On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
+```{r formatting, include=FALSE}
+lowest_data <-
+  get_tidy_audio_analysis(lowest_track_id) |>
+  compmus_align(beats, segments) |>
+  select(beats) |>
+  unnest(beats) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      )
+  )
 
-This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
+highest_data <-
+  get_tidy_audio_analysis(highest_track_id) |>
+  compmus_align(beats, segments) |>
+  select(beats) |>
+  unnest(beats) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      )
+  )
 
-The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
-
-The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
-
-### Artist overview
-
-```{r treemap_overview, echo=FALSE, fig_width=5,fig.height=4}
-# Create a ggplot object
-p <- ggplot(artist_data, aes(x = reorder(artist, track_count), y = track_count)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  labs(x = "Artist Name", y = "Catalog Size", title = "Catalog Size of Artists") +
-  coord_flip() # Flipping coordinates for better readability
-
-
-
-
-boxplot <- ggplot(artist_data, aes(x = artist, y = track_duration)) +
-              geom_boxplot() +
-              theme_minimal() +
-              labs(x = "Artist", y = "Track Length (minutes)", title = "Track Length Distribution Across Artists") +
-              theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate artist names for readability
-
-plot_grid(p, boxplot,
-          nrow= 2)
-```
-
-### Which artist has the highest valence?
-
-```{r explorative_plot, echo=FALSE}
-# Step 1: Identify the points
-album_corpus <- album_corpus %>%
-  mutate(combination = energy_mean + valence_mean) %>%
-  arrange(combination) %>%
-  mutate(label_position = case_when(
-    row_number() == 1 ~ "Lowest",
-    row_number() == n() ~ "Highest",
-    TRUE ~ NA_character_
-  ))
-
-# Prepare the label text
-album_corpus$label_text <- ifelse(
-  !is.na(album_corpus$label_position),
-  paste(album_corpus$artist, album_corpus$track.album.name, sep = ", "),
-  NA
-)
-
-# Step 2: Plot with annotations
-explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = valence_mean, color = artist)) +
-    geom_point(aes(alpha = 0.4, size = danceability_mean)) +
-    geom_text(data = filter(album_corpus, !is.na(label_text)), 
-                aes(label = label_text), 
-                nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
-                check_overlap = TRUE, 
-                size = 2) +  # Adjust label size
-    labs(title = "Energy vs. valence colored by Artist with danceability Size",
-         x = "Energy",
-         y = "Valence",
-         color = "Artist",
-         size = "Danceability",
-         alpha = "Alpha") +
+plot_lowest <-
+  lowest_data |> 
+    compmus_match_pitch_template(
+      key_templates,         # Change to chord_templates if descired
+      method = "euclidean",  # Try different distance metrics
+      norm = "manhattan"     # Try different norms
+    ) |>
+    ggplot(
+      aes(x = start + duration / 2, width = duration, y = name, fill = d)
+    ) +
+    geom_tile() +
+    scale_fill_viridis_c(guide = "none") +
     theme_minimal() +
-    guides(size = guide_legend(title = "Valence")) +
-    theme(legend.text = element_text(size = 12),  # Increase legend text size
-          legend.key.size = unit(1, "lines"))  # Increase legend key size
+    labs(x = "Time (s)", y = "")
 
-ggplotly(explorative_plot)
+plot_highest <-
+  highest_data |> 
+    compmus_match_pitch_template(
+      key_templates,         # Change to chord_templates if descired
+      method = "euclidean",  # Try different distance metrics
+      norm = "manhattan"     # Try different norms
+    ) |>
+    ggplot(
+      aes(x = start + duration / 2, width = duration, y = name, fill = d)
+    ) +
+    geom_tile() +
+    scale_fill_viridis_c(guide = "none") +
+    theme_minimal() +
+    labs(x = "Time (s)", y = "")
+```
+```{r plotting_key_analysis, echo=FALSE}
+plot_grid(plot_lowest, plot_highest, 
+          ncol=1
+)
 
 ```
 
 ***
-
-The plot included in this repository displays the distribution of track descriptives (energy, danceability and valence) of the selected corpus, grouped by albums where artists are displayed with color. All the data is extracted with the Spotify API by combining self constructed playlists. Each playlist contained all the studio album recordings of an artist, live recordings were ignored in this dataset.
-
-Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
-
-### Detailed artist overview
-
-```{r overview, echo=FALSE}
-# Static plot code here
-# Now, use 'track_info' in the 'text' aesthetic for tooltips
-track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
-  geom_point() +
-  facet_wrap(~artist) +
-  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
-  theme_minimal() +
-  guides(alpha = FALSE) + # Optionally, remove the alpha guide if not needed
-  theme(legend.text = element_text(size = 12),  # Increase legend text size
-        legend.key.size = unit(1, "lines"),  # Increase legend key size
-        legend.position = "none")  # Remove the legend
-
-# Convert to plotly object with tooltips
-track_plotly <- ggplotly(track_plot, tooltip = "text")
-
-# Print the plotly plot
-track_plotly
-
-
-
-```
-
-### testing
-```{r}
-bind_rows(
-  lowest_track |> 
-    compmus_self_similarity(pitches, "aitchison") |> 
-    mutate(d = d / max(d), type = "Chroma"),
-  lowest_track |> 
-    compmus_self_similarity(timbre, "euclidean") |> 
-    mutate(d = d / max(d), type = "Timbre")
-) |>
-  mutate() |> 
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  facet_wrap(~type) +
-  scale_fill_viridis_c(option = "E", guide = "none") +
-  theme_classic() + 
-  labs(x = "", y = "")
-
-# ## Highest
-bind_rows(
-  highest_track |>
-    compmus_self_similarity(pitches, "aitchison") |>
-    mutate(d = d / max(d), type = "Chroma"),
-  highest_track |>
-    compmus_self_similarity(timbre, "euclidean") |>
-    mutate(d = d / max(d), type = "Timbre")
-) |>
-  mutate() |>
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  facet_wrap(~type) +
-  scale_fill_viridis_c(option = "E", guide = "none") +
-  theme_classic() +
-  labs(x = "", y = "")
-```
-
-
-
-
+On the left we see...
 

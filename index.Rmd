@@ -50,51 +50,64 @@ album_corpus <- corpus %>%
     danceability_max = max(danceability, na.rm = TRUE),
     danceability_median = median(danceability, na.rm = TRUE),
     danceability_mean = mean(danceability, na.rm = TRUE),
+    danceability_sd = sd(danceability, na.rm = TRUE), # Standard deviation for danceability
+    
+    duration_min = min(track.duration_ms, na.rm = TRUE),
+    duration_max = max(track.duration_ms, na.rm = TRUE),
+    duration_median = median(track.duration_ms, na.rm = TRUE),
+    duration_mean = mean(track.duration_ms, na.rm = TRUE),
+    duration_sd = sd(track.duration_ms, na.rm = TRUE), # Standard deviation for danceability
     
     energy_min = min(energy, na.rm = TRUE),
     energy_max = max(energy, na.rm = TRUE),
     energy_median = median(energy, na.rm = TRUE),
     energy_mean = mean(energy, na.rm = TRUE),
+    energy_sd = sd(energy, na.rm = TRUE), # Standard deviation for energy
     
     loudness_min = min(loudness, na.rm = TRUE),
     loudness_max = max(loudness, na.rm = TRUE),
     loudness_median = median(loudness, na.rm = TRUE),
     loudness_mean = mean(loudness, na.rm = TRUE),
+    loudness_sd = sd(loudness, na.rm = TRUE), # Standard deviation for loudness
     
     speechiness_min = min(speechiness, na.rm = TRUE),
     speechiness_max = max(speechiness, na.rm = TRUE),
     speechiness_median = median(speechiness, na.rm = TRUE),
     speechiness_mean = mean(speechiness, na.rm = TRUE),
+    speechiness_sd = sd(speechiness, na.rm = TRUE), # Standard deviation for speechiness
     
     acousticness_min = min(acousticness, na.rm = TRUE),
     acousticness_max = max(acousticness, na.rm = TRUE),
     acousticness_median = median(acousticness, na.rm = TRUE),
     acousticness_mean = mean(acousticness, na.rm = TRUE),
+    acousticness_sd = sd(acousticness, na.rm = TRUE), # Standard deviation for acousticness
     
     liveness_min = min(liveness, na.rm = TRUE),
     liveness_max = max(liveness, na.rm = TRUE),
     liveness_median = median(liveness, na.rm = TRUE),
     liveness_mean = mean(liveness, na.rm = TRUE),
+    liveness_sd = sd(liveness, na.rm = TRUE), # Standard deviation for liveness
     
     valence_min = min(valence, na.rm = TRUE),
     valence_max = max(valence, na.rm = TRUE),
     valence_median = median(valence, na.rm = TRUE),
     valence_mean = mean(valence, na.rm = TRUE),
+    valence_sd = sd(valence, na.rm = TRUE), # Standard deviation for valence
     
     tempo_min = min(tempo, na.rm = TRUE),
     tempo_max = max(tempo, na.rm = TRUE),
     tempo_median = median(tempo, na.rm = TRUE),
-    tempo_mean = mean(tempo, na.rm = TRUE)
+    tempo_mean = mean(tempo, na.rm = TRUE),
+    tempo_sd = sd(tempo, na.rm = TRUE) # Standard deviation for tempo
   ) %>%
   ungroup() # Ensure the summarisation doesn't carry over into subsequent operations
 
-# View the summarized data
 
 ```
 
-```{r artist_data, include=FALSE} 
+```{r corpus_by_artist, include=FALSE} 
 # corpus grouped by artists (for treemap)
-artist_data <- corpus %>%
+corpus_by_artist <- corpus %>%
   mutate(track_duration = track.duration_ms / 60000) %>%
   group_by(artist) %>%
   summarize(
@@ -102,7 +115,7 @@ artist_data <- corpus %>%
     average_duration = mean(track_duration),
     track_duration = track_duration# Optional: average duration of tracks per artist
   )
-print(artist_data)
+print(corpus_by_artist)
 ```
 
 ```{r outliers, include=FALSE}
@@ -136,7 +149,7 @@ The albums selected showcase each artist's characteristic style and include trac
 
 ```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
 # Create a ggplot object
-p <- ggplot(artist_data, aes(x = reorder(artist, track_count), y = track_count)) +
+p <- ggplot(corpus_by_artist, aes(x = reorder(artist, track_count), y = track_count)) +
   geom_bar(stat = "identity") +
   theme_minimal() +
   labs(x = "Artist Name", y = "Catalog Size", title = "Catalog Size of Artists") +
@@ -145,7 +158,7 @@ p <- ggplot(artist_data, aes(x = reorder(artist, track_count), y = track_count))
 
 
 
-boxplot <- ggplot(artist_data, aes(x = artist, y = track_duration)) +
+boxplot <- ggplot(corpus_by_artist, aes(x = artist, y = track_duration)) +
               geom_boxplot() +
               theme_minimal() +
               labs(x = "Artist", y = "Track Length (minutes)", title = "Track Length Distribution Across Artists") +
@@ -158,7 +171,7 @@ plot_grid(p, boxplot,
 ***
 Here comes a sidebar
 
-### Which artist has the highest valence?
+### Which artist makes the most happy and energetic songs?
 
 ```{r explorative_plot, echo=FALSE}
 # Step 1: Identify the points
@@ -747,7 +760,7 @@ key_mode_plot <- ggplot(corpus_proportions, aes(x=key, y=proportion, fill=mode))
   scale_x_discrete(labels=key_labels_x) +  # Assuming key_labels_x is defined as before
   scale_fill_manual(values=c("red", "blue"), labels=c("minor", "major")) +
   facet_wrap(~ playlist_name, scales="free_y") +
-  labs(x="Key", y="Proportion", title="Proportions of Keys and Modes in Artist Discographies (Stacked Modes)") +
+  labs(x="Key", y="Proportion", title="Proportions of Keys and Modes in Artist Discographies") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle=45, hjust=1))
 
@@ -763,5 +776,33 @@ interactive_plot
 
 On the left we see the distribution of keys per artist
 
+0 means minor, 1 major. 
+
+Beatles have spikes for C, D, E, G, A, B
+
 ### Standard Deviation
+
+```{r stdev, echo=FALSE}
+scattertje <-
+  ggplot(album_corpus,
+    aes(
+      x = tempo_mean,
+      y = tempo_sd,
+      colour = artist,
+      size = duration_mean,
+      alpha = loudness_mean
+    )) + geom_point() +
+  geom_rug() +
+  theme_minimal() +
+  labs(
+    x = "Mean Tempo (bpm)",
+    y = "SD Tempo",
+    colour = "Genre",
+    size = "Duration (min)",
+    alpha = "Volume (dBFS)"
+  )
+
+ggplotly(scattertje)
+
+```
 

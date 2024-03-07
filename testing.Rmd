@@ -1,0 +1,271 @@
+---
+title: "The Djesse Albums"
+author: "Lucas Straathof"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical layout: scroll
+    storyboard: true 
+    theme: journal
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(tidymodels)
+library(compmus)
+library(heatmaply)
+library(protoclust)
+library(cowplot)
+library(spotifyr)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+```
+
+```{r, include=FALSE}
+djesse1 <- get_playlist_audio_features("", "55AhOVOznsMmppxhkhQeox")
+djesse2 <- get_playlist_audio_features("", "2ySg6xH1guPJ6WacYBnEtE")
+djesse3 <- get_playlist_audio_features("", "4y0xPsPUbwmsf32r8GiETo")
+all_albums <- bind_rows(djesse1, djesse2, djesse3)
+```
+
+### Cepstogram
+
+```{r}
+sleeping_dreams <-
+  get_tidy_audio_analysis("4mTd21pyWajN252LcouVIm") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(pitches = map(segments, compmus_summarise, pitches, method = "rms", norm = "manhattan")) |>
+  mutate(timbre = map(segments, compmus_summarise, timbre, method = "rms", norm = "manhattan"))
+```
+
+```{r}
+sleeping_dreams_cepstogram <- sleeping_dreams |>
+  compmus_gather_timbre() |>
+  ggplot(aes(x = start + duration / 2, width = duration, y = basis, fill = value)) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+```
+
+
+
+```{r, include=FALSE}
+sleeping_dreams_pitches <- sleeping_dreams |>
+  compmus_self_similarity(pitches, "euclidean") |> 
+  ggplot(aes(x = xstart + xduration / 2, width = xduration, y = ystart + yduration / 2, height = yduration, fill = d)) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x="", y="")
+
+sleeping_dreams_timbre <- sleeping_dreams |>
+  compmus_self_similarity(timbre, "euclidean") |> 
+  ggplot(aes(x = xstart + xduration / 2, width = xduration, y = ystart + yduration / 2, height = yduration, fill = d)) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x="", y="")
+
+```
+
+```{r, fig.width=10, fig.height=5.5}
+plot_grid(sleeping_dreams_pitches, sleeping_dreams_timbre, ncol=2, labels = c("Pitch", "Timbre"))
+```
+
+***
+
+In this cepstogram, we can see the pitch and timbre of the song 'Sleeping on my Dreams' by Jacob Collier from his 3rd Djesse album. I chose this song, because it has a more usual structure, with clear verses and chorus'. And we can also see this in the graphs. In the pitch graph (and also in the timbre graph), we can see clear lines where a new section begins. It first begins with a small intro, then goes to a verse, which is the first square. Then a chorus starts which is the second square. The chorus also has some different instruments, which is why you can also see this change in the timbre graph. After the chorus, another verse and chorus follow. 
+
+In the bridge section, we can see that it changes entirely. This is because most instruments cut out at this point and it changes to a more flowing section with smooth sounds, contrasting with the more catchy and staccato instruments from the verses and chorus'. The outro is also made up out of these flowing instruments, which is why the outro and bridge look the same in the graphs. 
+
+
+
+### Home - The Djesse Albums
+
+Welcome to my page about the wonderful albums of Jacob Collier, called Djesse. This series of albums covers tons of genres and are completely different from each other. In this research, I'm going to dive deeper into these albums, seeing if there are comparisons to be made, or to see if they are completely different. 
+
+There is a fourth Djesse album on its way and will be released at the end of February, but I think it’s easier to analyze if I can start right away, seeing as we're still in the middle of February as of the point we started this course. I might change this if it becomes clear that I can easily include it into my corpus
+
+I really like Jacob Collier’s music and am a big fan. His Djesse albums especially blow me out of the water each time. His music is so different from anyone else’s. He has his very distinct style which is instantly recognizable. Jacob Collier is his own genre within music in a way. 
+
+The comparisons will be within the albums themselves. I find it interesting to discover if there is a difference between the Djesse albums in a way I haven't discovered before. I’m expecting that there will be a constant theme within a single album, but differences between the few. 
+
+The thing that I think is going to be the most troubling, is the fact that there are not that many songs,  around 50 actually. This will become an issue if it shows that I need more data to do the research. For example, if I’m seeing a correlation, but that correlation is dependent on 2 or 3 songs being the same in a way, that isn’t much evidence. With more songs, this evidence would be stronger. 
+
+I think the biggest outlying song will be ‘Moon River’ on Djesse vol. 2. This song was completely sung acapella and is very different from everything else on the albums, even though every single thing Jacob Collier makes is varying in every aspect.
+
+### The Albums
+
+In 2018, Collier began working on Djesse, a four-volume, 50-song album featuring more than two dozen artists and ensembles. The first volume, which features the Metropole Orkest, Djesse Vol. 1, was released in December 2018. The second, Djesse Vol. 2, uses more acoustic instrumentation, and was released in July 2019. In 2020, Collier won Grammy Awards for his arrangements of "All Night Long (All Night)" from Djesse Vol. 1 and "Moon River" from Djesse Vol. 2. In 2021, he won a Grammy Award for "He Won't Hold You" from the third volume, Djesse Vol. 3. 
+
+[Wikipedia Page](https://en.wikipedia.org/wiki/Jacob_Collier)
+
+
+### First Comparison
+
+```{r, include=FALSE}
+energy_of_all <- ggplot(all_albums, aes(x=energy, fill=playlist_name)) +
+  geom_histogram(binwidth =0.1) +
+  scale_x_continuous(breaks = seq(0, 1, by = 0.1)) +
+  theme_classic()
+```
+
+```{r}
+ggplotly(energy_of_all)
+```
+
+***
+
+In this first graph, we compare the energy of all the albums. And we can see a few differences. 
+First of all, Djesse Vol. 3 seems to be the most energetic overall, with nothing going beneath the 0.3 energy range. 
+Secondly, Djesse Vol. 2 is very spread out. There are songs on all parts of the graph.
+
+
+### Key Centers
+```{r}
+all_albums
+```
+
+```{r, include=FALSE}
+all_albums$mode <- as.factor(all_albums$mode)
+
+key_labels_x <- c("C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B")
+mode_labels_y <- c("minor", "major")
+mode_colors_y <- c("red", "blue")
+
+theme_key_center <- theme(axis.text.x = element_text(hjust = 1),
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(),  
+        panel.background = element_rect(fill = "white"),  
+        panel.grid.minor = element_line(color = "gray"),
+        plot.title = element_text(hjust = 0.5, margin = margin(b = 20))
+)
+
+key_center <- ggplot(all_albums, aes(x=key, fill=mode)) +
+              geom_histogram(binwidth = 1, color = "gray25") +
+              facet_wrap(~ factor(playlist_name, levels = c('Djesse Vol. 1', 'Djesse Vol. 2', 'Djesse Vol. 3'))) +
+              scale_x_continuous(breaks = 0:11, labels = key_labels_x) +
+              scale_y_continuous(limits = c(0, 4)) +
+              scale_fill_manual(labels = mode_labels_y, values = mode_colors_y) + 
+              expand_limits(x = c(0, 11)) +
+              ggtitle("Djesse Albums Key Centers") +
+              theme_key_center
+```
+
+
+```{r, fig.width=10, fig.height=6}
+ggplotly(key_center)
+```
+
+***
+
+In these graphs, we see the key centers of the three different albums. First of all, the Djesse Vol. 1 album purely contains major songs, which is interesting. Actually, over all the songs there aren't that many minor songs. So I'd say this is a big correlation between them all.
+
+It's also funny to see that Collier has never put a song in the key of Eb or G into a Djesse album. 
+
+
+### Chroma Features
+
+```{r}
+moonriver <- get_tidy_audio_analysis("1IRRqn75jaZHp7zMT1NGbZ") |>
+  select(segments) |>
+  unnest(segments) |>
+  select(start, duration, pitches)
+
+moonriver_plot <- moonriver |>
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
+  compmus_gather_chroma() |> 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  geom_vline(xintercept = 228, color = "red") +
+  geom_vline(xintercept = 274, color = "red") +
+  geom_vline(xintercept = 347, color = "red") +
+  geom_vline(xintercept = 410, color = "red") +
+  geom_vline(xintercept = 474, color = "red") +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude", title = "Moonriver (Jacob Collier)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, margin = margin(b = 20, t = 20))) +
+  scale_fill_viridis_c()
+```
+
+```{r, fig.width=10, fig.height=5}
+plot_grid(moonriver_plot, ncol = 1)
+```
+
+***
+
+In this Chromagram plot, I plotted the song Moon River by Jacob Collier. That is because he transposes this song tons and even to keys which don't exist on a normal piano, like half sharps. That is why I thought it would be interesting to see what the chroma plot would do. The song starts in Bb major, then goes to Db major around 3 minutes and 48 seconds (228 s) and then around 4.34 (247 s) he transposes to D Major, up a semitone. At around 5.47 (347 s), Jacob goes to D Half Sharp Major, which is up a quarter tone. After that, he goes to another weird key. At 6.50 (410 s), he goes to E Half Flat Major. Then, he does something even more interesting. He gradually rises the key over a longer period of time, from 7.54 (474 s) to 8.18 (which is right at the end of the song) it transposes from E Half Flat to E Half Sharp. 
+
+I think the most obvious point where you can see that Jacob is outside the 12 tone temperament is between 410 s and 474 s, where the song is in E Half Flat Major. This is the point where you can see the most dark spaces, which means that the system doesn't really know which notes are being played. 
+
+
+### Cepstogram
+
+```{r}
+sleeping_dreams <-
+  get_tidy_audio_analysis("4mTd21pyWajN252LcouVIm") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(pitches = map(segments, compmus_summarise, pitches, method = "rms", norm = "manhattan")) |>
+  mutate(timbre = map(segments, compmus_summarise, timbre, method = "rms", norm = "manhattan"))
+```
+
+```{r}
+sleeping_dreams_cepstogram <- sleeping_dreams |>
+  compmus_gather_timbre() |>
+  ggplot(aes(x = start + duration / 2, width = duration, y = basis, fill = value)) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+```
+
+```{r, fig.width=10, fig.height=5}
+sleeping_dreams_cepstogram
+```
+
+
+### SSM Graphs
+
+
+```{r, include=FALSE}
+sleeping_dreams_pitches <- sleeping_dreams |>
+  compmus_self_similarity(pitches, "euclidean") |> 
+  ggplot(aes(x = xstart + xduration / 2, width = xduration, y = ystart + yduration / 2, height = yduration, fill = d)) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x="", y="")
+
+sleeping_dreams_timbre <- sleeping_dreams |>
+  compmus_self_similarity(timbre, "euclidean") |> 
+  ggplot(aes(x = xstart + xduration / 2, width = xduration, y = ystart + yduration / 2, height = yduration, fill = d)) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x="", y="")
+
+```
+
+```{r, fig.width=10, fig.height=5.5}
+plot_grid(sleeping_dreams_pitches, sleeping_dreams_timbre, ncol=2, labels = c("Pitch", "Timbre"))
+```
+
+
+

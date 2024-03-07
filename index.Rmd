@@ -26,30 +26,10 @@ library(patchwork)
 library(gridExtra)
 ```
 
-```{r loading, include=FALSE}
-# Loading datasets
-beatles <- get_playlist_audio_features("", "5YPyQdiRzU0xolryQHqhNv") 
-rhcp <- get_playlist_audio_features("", "04rfJgMUHRVg3d7iL3dLPU")
-fela_kuti <- get_playlist_audio_features("", "7kdOWMLqjh2nfBPqvZ6zGd")
-daft_punk <- get_playlist_audio_features("", "49In2rUl8PCWKC6yAETu9G")
-bjork <- get_playlist_audio_features("", "19Ar68GhVwnuSNgw7CtF7y")
-miles_davis <- get_playlist_audio_features("", "1qK5njkyEremnIBvPbw36O")
-radiohead <- get_playlist_audio_features("", "0GedvaI33dOhxTaJTnh80p")
-youssoundour <- get_playlist_audio_features("","23IgCQB3p9ZhJtD4wPwQAC")
-caetanoveloso <- get_playlist_audio_features("", "6PEjftDLv1ro1R8y4GwUAn")
-```
+
 
 ```{r combining, include=FALSE}
-beatles$artist <- "Beatles"
-rhcp$artist <- "RHCP"
-fela_kuti$artist <- "Fela Kuti"
-daft_punk$artist <- "Daft Punk"
-bjork$artist <- "Bjork"
-miles_davis$artist <- "Miles Davis"
-radiohead$artist <- "Radiohead"
-youssoundour$artist <- "Youssou N'Dour"
-caetanoveloso$artist <- "Caetano Veloso"
-corpus <- rbind(beatles, rhcp, fela_kuti, daft_punk, bjork, miles_davis, radiohead, youssoundour, caetanoveloso)
+corpus <- readRDS(file="data/corpus-data.RDS")
 
 ```
 ```{r basic transformations }
@@ -154,7 +134,7 @@ The albums selected showcase each artist's characteristic style and include trac
 
 ### Artist overview
 
-```{r treemap_overview, echo=FALSE, fig_width=5,fig.height=4}
+```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
 # Create a ggplot object
 p <- ggplot(artist_data, aes(x = reorder(artist, track_count), y = track_count)) +
   geom_bar(stat = "identity") +
@@ -174,6 +154,9 @@ boxplot <- ggplot(artist_data, aes(x = artist, y = track_duration)) +
 plot_grid(p, boxplot,
           nrow= 2)
 ```
+
+***
+Here comes a sidebar
 
 ### Which artist has the highest valence?
 
@@ -234,7 +217,7 @@ track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.na
   facet_wrap(~artist) +
   labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
   theme_minimal() +
-  guides(alpha = FALSE) + # Optionally, remove the alpha guide if not needed
+  guides(alpha = none) + # Optionally, remove the alpha guide if not needed
   theme(legend.text = element_text(size = 12),  # Increase legend text size
         legend.key.size = unit(1, "lines"),  # Increase legend key size
         legend.position = "none")  # Remove the legend
@@ -249,8 +232,13 @@ track_plotly
 
 ```
 
+***
+
+Sidebar text
+
 # How much do artists adhere to their albums? {.storyboard data-navmenu=Introduction}
 ### This will be a page
+
 
 # Artists {.storyboard data-navmenu="Musical Journey"}
 ### About page
@@ -263,23 +251,60 @@ track_plotly
 1+1
 ```
 
+
 # Beatles {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
 
 # Björk {.storyboard data-navmenu="Musical Journey"}
 
+### About the artist
+
+### Analysis
+
 # Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
 
 # Daft Punk {.storyboard data-navmenu="Musical Journey"}
 
+### About the artist
+
+### Analysis
+
 # Fela Kuti {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
 
 # Miles Davis {.storyboard data-navmenu="Musical Journey"}
 
+### About the artist
+
+### Analysis
+
 # Radiohead {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
 
 # RHCP {.storyboard data-navmenu="Musical Journey"}
 
+### About the artist
+
+### Analysis
+
 # Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
 
 # How do two outliers of my corpus look like? (w9){.storyboard data-navmenu=Homework} 
 
@@ -295,6 +320,8 @@ highest_track_id <- corpus_arranged %>%
   filter(label_position == "Highest") %>%
   pull(track.id)
 
+print(lowest_track_id)
+print(highest_track_id)
 # Extracting track info for Lowest combination
 lowest_track_name_album <- corpus_arranged %>%
   filter(label_position == "Lowest") %>%
@@ -410,45 +437,8 @@ highest_track_artist <- corpus_arranged %>%
 ```{r selfsimilarity, include=FALSE}
 
 ## getting audio analysis
-lowest_track <-
-  get_tidy_audio_analysis(lowest_track_id) |>
-  compmus_align(beats, segments) |>
-  select(beats) |>
-  unnest(beats) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "acentre", norm = "manhattan"
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "mean"
-      )
-  )
-highest_track <-
-  get_tidy_audio_analysis(highest_track_id) |>
-  compmus_align(bars, segments) |>
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "acentre", norm = "manhattan"
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "mean"
-      )
-  )
-
+lowest_track <- readRDS(file = "data/lowest_track_tidy_analysis-data.RDS")
+highest_track <- readRDS(file = "data/highest_track_tidy_analysis-data.RDS")
 # LOWEST CHROMA
 plot_lowest_chroma <- lowest_track |> 
     compmus_self_similarity(pitches, "aitchison") |> 
@@ -566,7 +556,7 @@ Overall, we can argue that a high diversity in pitch classes can clutter the sel
 
 
 
-# Keygrams (w10) {.storyboard data-navmenu=Homework} 
+# Keygrams, histograms and stdev (w10) {.storyboard data-navmenu=Homework} 
 ### Keygrams
 ```{r chord_template, include=FALSE}
 circshift <- function(v, n) {
@@ -722,4 +712,56 @@ plot_grid(plot_lowest, plot_highest,
 
 ***
 On the left we see...
+
+
+
+### Histograms 
+
+
+```{r}
+
+corpus$mode <- as.factor(corpus$mode)
+corpus_counts <- corpus %>%
+  group_by(playlist_name, key, mode) %>%
+  summarise(count = n(), .groups = 'drop')
+
+# Calculate the total count of tracks for each artist
+total_counts <- corpus %>%
+  group_by(playlist_name) %>%
+  summarise(total = n(), .groups = 'drop')
+
+# Merge the counts with the total and calculate the proportion
+corpus_proportions <- merge(corpus_counts, total_counts, by = "playlist_name") %>%
+  mutate(proportion = count / total)
+
+# Ensure 'key' is a factor with levels in the correct order for plotting
+corpus_proportions$key <- factor(corpus_proportions$key, levels = as.character(0:11))
+
+
+# Assuming 'key' is stored as numeric and needs to be converted for meaningful axis labels
+key_labels_x <- c("C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B")
+# Create the plot
+# Assuming the rest of your plotting code remains the same
+key_mode_plot <- ggplot(corpus_proportions, aes(x=key, y=proportion, fill=mode)) +
+  geom_bar(stat="identity", position="stack") +
+  scale_x_discrete(labels=key_labels_x) +  # Assuming key_labels_x is defined as before
+  scale_fill_manual(values=c("red", "blue"), labels=c("minor", "major")) +
+  facet_wrap(~ playlist_name, scales="free_y") +
+  labs(x="Key", y="Proportion", title="Proportions of Keys and Modes in Artist Discographies (Stacked Modes)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+
+# Convert to plotly object
+interactive_plot <- ggplotly(key_mode_plot)
+
+# Display the interactive plot
+interactive_plot
+
+```
+
+***
+
+On the left we see the distribution of keys per artist
+
+### Standard Deviation
 

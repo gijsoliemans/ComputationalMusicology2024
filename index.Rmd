@@ -130,195 +130,6 @@ corpus_arranged <- corpus %>%
   ))
 
 ```
-# Introduction {.storyboard data-navmenu=Introduction}
-### Introduction  
-```{r intro_overview, echo=FALSE}
-
-
-```
-
-On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
-
-This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
-
-The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
-
-The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
-
-### Artist overview
-
-```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
-# Create a ggplot object
-p <- ggplot(corpus_by_artist, aes(x = reorder(artist, track_count), y = track_count)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  labs(x = "Artist Name", y = "Catalog Size", title = "Catalog Size of Artists") +
-  coord_flip() # Flipping coordinates for better readability
-
-
-
-
-boxplot <- ggplot(corpus_by_artist, aes(x = artist, y = track_duration)) +
-              geom_boxplot() +
-              theme_minimal() +
-              labs(x = "Artist", y = "Track Length (minutes)", title = "Track Length Distribution Across Artists") +
-              theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate artist names for readability
-
-plot_grid(p, boxplot,
-          nrow= 2)
-```
-
-***
-Here comes a sidebar
-
-### Which artist makes the most happy and energetic songs?
-
-```{r explorative_plot, echo=FALSE}
-# Step 1: Identify the points
-album_corpus <- album_corpus %>%
-  mutate(combination = energy_mean + valence_mean) %>%
-  arrange(combination) %>%
-  mutate(label_position = case_when(
-    row_number() == 1 ~ "Lowest",
-    row_number() == n() ~ "Highest",
-    TRUE ~ NA_character_
-  ))
-
-# Prepare the label text
-album_corpus$label_text <- ifelse(
-  !is.na(album_corpus$label_position),
-  paste(album_corpus$artist, album_corpus$track.album.name, sep = ", "),
-  NA
-)
-
-# Step 2: Plot with annotations
-explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = valence_mean, color = artist)) +
-    geom_point(aes(alpha = 0.4, size = danceability_mean)) +
-    geom_text(data = filter(album_corpus, !is.na(label_text)), 
-                aes(label = label_text), 
-                nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
-                check_overlap = TRUE, 
-                size = 2) +  # Adjust label size
-    labs(title = "Energy vs. valence colored by Artist with danceability Size",
-         x = "Energy",
-         y = "Valence",
-         color = "Artist",
-         size = "Danceability",
-         alpha = "Alpha") +
-    theme_minimal() +
-    guides(size = guide_legend(title = "Valence")) +
-    theme(legend.text = element_text(size = 12),  # Increase legend text size
-          legend.key.size = unit(1, "lines"))  # Increase legend key size
-
-ggplotly(explorative_plot)
-
-```
-
-***
-
-The plot included in this repository displays the distribution of track descriptives (energy, danceability and valence) of the selected corpus, grouped by albums where artists are displayed with color. All the data is extracted with the Spotify API by combining self constructed playlists. Each playlist contained all the studio album recordings of an artist, live recordings were ignored in this dataset.
-
-Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
-
-### Detailed artist overview
-
-```{r overview, echo=FALSE}
-# Static plot code here
-# Now, use 'track_info' in the 'text' aesthetic for tooltips
-track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
-  geom_point() +
-  facet_wrap(~artist) +
-  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
-  theme_minimal() +
-  guides(alpha = none) + # Optionally, remove the alpha guide if not needed
-  theme(legend.text = element_text(size = 12),  # Increase legend text size
-        legend.key.size = unit(1, "lines"),  # Increase legend key size
-        legend.position = "none")  # Remove the legend
-
-# Convert to plotly object with tooltips
-track_plotly <- ggplotly(track_plot, tooltip = "text")
-
-# Print the plotly plot
-track_plotly
-
-
-
-```
-
-***
-
-Sidebar text
-
-# How much do artists adhere to their albums? {.storyboard data-navmenu=Introduction}
-### This will be a page
-
-
-# Artists {.storyboard data-navmenu="Musical Journey"}
-### About page
-```{r}
-1+1
-```
-
-### Music
-```{r}
-1+1
-```
-
-
-# Beatles {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# Björk {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# Daft Punk {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# Fela Kuti {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# Miles Davis {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# Radiohead {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# RHCP {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
-# Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-
-### Analysis
-
 # How do two outliers of my corpus look like? (w9){.storyboard data-navmenu=Homework} 
 
 ### How doe the chroma features look like?
@@ -699,7 +510,7 @@ plot_lowest <-
     geom_tile() +
     scale_fill_viridis_c(guide = "none") +
     theme_minimal() +
-    labs(x = "Time (s)", y = "")
+    labs(x = "Time (s)", y = "", title = lowest_track_name_album)
 
 plot_highest <-
   highest_data |> 
@@ -714,7 +525,7 @@ plot_highest <-
     geom_tile() +
     scale_fill_viridis_c(guide = "none") +
     theme_minimal() +
-    labs(x = "Time (s)", y = "")
+    labs(x = "Time (s)", y = "", title = highest_track_name_album)
 ```
 ```{r plotting_key_analysis, echo=FALSE}
 plot_grid(plot_lowest, plot_highest, 
@@ -724,8 +535,11 @@ plot_grid(plot_lowest, plot_highest,
 ```
 
 ***
-On the left we see...
+On the left we see the keygrams for two songs in my corpus. These tracks are extremes in my corpus, selected based on a combination of two factors: the Valence & Energy scores assigned by Spotify. 
 
+"Julien dans l'ascenseur" by Miles Davis is the least extreme song regarding the Valence & Energy score. Throughout the song it's not super clear to see exactly which keys are used, but there are some moments on which we wee a change. One of these moments is on the  20-25s mark, which would make sense since around this time a Miles Davis starts his trumpet part. The trumpet part seems to trigger the different keys. 
+
+"Dawal - Version Mbalax" by Youssou N'Dour is the most extreme song regarding the Valence & Energy score. For the major part of the song, there is not really one key recognisable. This is most likely due to the amount of percussion instruments in the song. If you squint your eyes, you can kind of see a repeating pattern of dark blue throughout the whole song. 
 
 
 ### Histograms 
@@ -774,35 +588,228 @@ interactive_plot
 
 ***
 
-On the left we see the distribution of keys per artist
+Displayed on this page are the proportional distribution plots of musical keys for each artist. To account for the varying catalog sizes, the frequency of tracks in specific keys is presented as a percentage of the total number of works in each artist's entire catalog, ensuring a normalized comparison.
 
-0 means minor, 1 major. 
+For me, the most interesting distribution of keys is the one of the Beatles. There we see high occurrences of the following keys: C, D, E, G, A. (all white keys on a piano) These keys could be classified as more easy to use/understand. 
 
-Beatles have spikes for C, D, E, G, A, B
+Upon closer inspection, we see the roughly the same distribution for the following artists: Caetano Veloso, Radiohead and RHCP. These artist and the beatles roughly show the same pattern of often-used keys: C, D, E, F, G, A, and B.
 
 ### Standard Deviation
 
 ```{r stdev, echo=FALSE}
-scattertje <-
-  ggplot(album_corpus,
-    aes(
-      x = tempo_mean,
-      y = tempo_sd,
-      colour = artist,
-      size = duration_mean,
-      alpha = loudness_mean
-    )) + geom_point() +
+scattertje <- ggplot(album_corpus, aes(
+    x = tempo_mean,
+    y = tempo_sd,
+    colour = artist,
+    size = duration_mean,
+    alpha = loudness_mean
+  )) + 
+  geom_point() +
   geom_rug() +
-  theme_minimal() +
   labs(
     x = "Mean Tempo (bpm)",
     y = "SD Tempo",
-    colour = "Genre",
-    size = "Duration (min)",
-    alpha = "Volume (dBFS)"
+    colour = "Artist"
+  ) +
+  guides(
+    size = guide_legend(title = "Duration (min)"),
+    alpha = guide_legend(title = "Volume (dBFS)")
   )
 
 ggplotly(scattertje)
 
 ```
+
+***
+
+In the scatterplot we see the albums as dots, colored per artist. On the x and y axis display the mean and standard deviation of tempo respectively. Because the standard deviation is calculated per album, it's generally quite high but also for most artists the same. For artist like Caetano Veloso, Fela Kuti and Miles Davis we see their albums spread out over both axes. For other artists we see their albums are more clustered together.
+
+# Introduction {.storyboard data-navmenu=Introduction}
+### Introduction  
+```{r intro_overview, echo=FALSE}
+
+
+```
+
+On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
+
+This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
+
+The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
+
+The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
+
+### Artist overview
+
+```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
+# Create a ggplot object
+p <- ggplot(corpus_by_artist, aes(x = reorder(artist, track_count), y = track_count)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(x = "Artist Name", y = "Catalog Size", title = "Catalog Size of Artists") +
+  coord_flip() # Flipping coordinates for better readability
+
+
+
+
+boxplot <- ggplot(corpus_by_artist, aes(x = artist, y = track_duration)) +
+              geom_boxplot() +
+              theme_minimal() +
+              labs(x = "Artist", y = "Track Length (minutes)", title = "Track Length Distribution Across Artists") +
+              theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate artist names for readability
+
+plot_grid(p, boxplot,
+          nrow= 2)
+```
+
+***
+Here comes a sidebar
+
+### Which artist makes the most happy and energetic songs?
+
+```{r explorative_plot, echo=FALSE}
+# Step 1: Identify the points
+album_corpus <- album_corpus %>%
+  mutate(combination = energy_mean + valence_mean) %>%
+  arrange(combination) %>%
+  mutate(label_position = case_when(
+    row_number() == 1 ~ "Lowest",
+    row_number() == n() ~ "Highest",
+    TRUE ~ NA_character_
+  ))
+
+# Prepare the label text
+album_corpus$label_text <- ifelse(
+  !is.na(album_corpus$label_position),
+  paste(album_corpus$artist, album_corpus$track.album.name, sep = ", "),
+  NA
+)
+
+# Step 2: Plot with annotations
+explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = valence_mean, color = artist)) +
+    geom_point(aes(alpha = 0.4, size = danceability_mean)) +
+    geom_text(data = filter(album_corpus, !is.na(label_text)), 
+                aes(label = label_text), 
+                nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
+                check_overlap = TRUE, 
+                size = 2) +  # Adjust label size
+    labs(title = "Energy vs. valence colored by Artist with danceability Size",
+         x = "Energy",
+         y = "Valence",
+         color = "Artist",
+         size = "Danceability",
+         alpha = "Alpha") +
+    theme_minimal() +
+    guides(size = guide_legend(title = "Valence")) +
+    theme(legend.text = element_text(size = 12),  # Increase legend text size
+          legend.key.size = unit(1, "lines"))  # Increase legend key size
+
+ggplotly(explorative_plot)
+
+```
+
+***
+
+The plot included in this repository displays the distribution of track descriptives (energy, danceability and valence) of the selected corpus, grouped by albums where artists are displayed with color. All the data is extracted with the Spotify API by combining self constructed playlists. Each playlist contained all the studio album recordings of an artist, live recordings were ignored in this dataset.
+
+Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
+
+### Detailed artist overview
+
+```{r overview, echo=FALSE}
+# Static plot code here
+# Now, use 'track_info' in the 'text' aesthetic for tooltips
+track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
+  geom_point() +
+  facet_wrap(~artist) +
+  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
+  theme_minimal() +
+  guides(alpha = none) + # Optionally, remove the alpha guide if not needed
+  theme(legend.text = element_text(size = 12),  # Increase legend text size
+        legend.key.size = unit(1, "lines"),  # Increase legend key size
+        legend.position = "none")  # Remove the legend
+
+# Convert to plotly object with tooltips
+track_plotly <- ggplotly(track_plot, tooltip = "text")
+
+# Print the plotly plot
+track_plotly
+
+
+
+```
+
+***
+
+Sidebar text
+
+# How much do artists adhere to their albums? {.storyboard data-navmenu=Introduction}
+### This will be a page
+
+
+# Artists {.storyboard data-navmenu="Musical Journey"}
+### About page
+```{r}
+1+1
+```
+
+### Music
+```{r}
+1+1
+```
+
+
+# Beatles {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# Björk {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# Daft Punk {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# Fela Kuti {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# Miles Davis {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# Radiohead {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# RHCP {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
+
+# Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+
+### Analysis
 

@@ -35,7 +35,8 @@ corpus <- readRDS(file="data/corpus-data.RDS")
 ```{r basic transformations }
 # basic data transformations
 corpus <- corpus %>%
-  mutate(track_info = paste(track.name, "-", track.album.name))
+  mutate(track_info = paste(track.name, "-", track.album.name)) %>%
+  mutate(year = substr(track.album.release_date, 1, 4))
 
 ```
 
@@ -750,7 +751,9 @@ Sidebar text
 # Artists {.storyboard data-navmenu="Musical Journey"}
 ### About page
 ```{r}
-1+1
+
+corpus$year
+
 ```
 
 ### Music
@@ -764,6 +767,7 @@ Sidebar text
 ### About the artist
 
 ### Analysis
+
 
 # Björk {.storyboard data-navmenu="Musical Journey"}
 

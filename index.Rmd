@@ -28,24 +28,25 @@ library(gridExtra)
 
 
 
-```{r combining, include=FALSE}
+```{r loading_data, include=FALSE}
 corpus <- readRDS(file="data/corpus-data.RDS")
 
 ```
-```{r basic transformations }
+```{r transformations, include=FALSE}
 # basic data transformations
 corpus <- corpus %>%
   mutate(track_info = paste(track.name, "-", track.album.name)) %>%
-  mutate(year = substr(track.album.release_date, 1, 4))
+  mutate(year = substr(track.album.release_date, 1, 4)) %>%
+  mutate(track_duration_minutes = track.duration_ms / 60000)
 
 ```
 
-```{r album_corpus , message=FALSE, include=FALSE}
+```{r album_corpus, include=FALSE}
 # corpus grouped by albums
 
 # Grouping and summarizing the dataset
 album_corpus <- corpus %>%
-  group_by(artist, track.album.name, track.album.release_date) %>%
+  group_by(artist, track.album.name, track.album.release_date, year) %>%
   summarise(
     danceability_min = min(danceability, na.rm = TRUE),
     danceability_max = max(danceability, na.rm = TRUE),
@@ -107,17 +108,40 @@ album_corpus <- corpus %>%
 ```
 
 ```{r corpus_by_artist, include=FALSE} 
-# corpus grouped by artists (for treemap)
+# corpus grouped by artists
+
 corpus_by_artist <- corpus %>%
-  mutate(track_duration = track.duration_ms / 60000) %>%
   group_by(artist) %>%
-  summarize(
+  reframe(
     track_count = n(),  # Count of tracks per artist
-    average_duration = mean(track_duration),
-    track_duration = track_duration# Optional: average duration of tracks per artist
-  )
-print(corpus_by_artist)
+    average_duration = mean(track_duration_minutes), 
+    min_year_release_date = min(year),
+    max_year_release_date = max(year)
+    )
+
 ```
+
+```{r artist_corpus_analysis, include=FALSE}
+album_corpus_analysis <- album_corpus %>%
+  left_join(corpus_by_artist, by = "artist") %>%
+  mutate(
+    year = as.numeric(year),
+    min_year = as.numeric(min_year_release_date),  # Convert to numeric
+    max_year = as.numeric(max_year_release_date),  # Convert to numeric
+    career_length = max_year - min_year + 1,
+    position_in_career = year - min_year,
+    career_fraction = position_in_career / career_length,
+    career_cat = case_when(
+      career_fraction <= 0.25 ~ "Early",
+      career_fraction > 0.25 & career_fraction <= 0.5 ~ "Growth",
+      career_fraction > 0.5 & career_fraction <= 0.75 ~ "Mature",
+      TRUE ~ "Late"
+    )
+  ) %>%
+  select(-career_length, -position_in_career, -career_fraction, -min_year_release_date, -max_year_release_date)  # Optionally remove intermediate columns
+
+```
+
 
 ```{r outliers, include=FALSE}
 corpus_arranged <- corpus %>%
@@ -162,17 +186,8 @@ highest_track_name_album <- corpus_arranged %>%
 
 
 ```{r chroma_lowest, echo=FALSE, fig.width=13, fig.height=8}
-lowest_energy_valence <-
-  get_tidy_audio_analysis(lowest_track_id) |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-
-highest_energy_valence <-
-  get_tidy_audio_analysis(highest_track_id) |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
+lowest_energy_valence <- readRDS(file="data/lowest_energy_valence-data.RDS")
+highest_energy_valence <- readRDS(file="data/highest_energy_valence-data.RDS")
 
 ##### Chromagrams
 lowest_energy_valence_chromagram <-
@@ -471,32 +486,9 @@ key_templates <-
   )
 ```
 
-```{r formatting, include=FALSE}
-lowest_data <-
-  get_tidy_audio_analysis(lowest_track_id) |>
-  compmus_align(beats, segments) |>
-  select(beats) |>
-  unnest(beats) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "mean", norm = "manhattan"
-      )
-  )
-
-highest_data <-
-  get_tidy_audio_analysis(highest_track_id) |>
-  compmus_align(beats, segments) |>
-  select(beats) |>
-  unnest(beats) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "mean", norm = "manhattan"
-      )
-  )
+```{r keygram_formatting, include=FALSE}
+lowest_data <- readRDS(file= "data/keygram_lowest_data-data.RDS")
+highest_data <- readRDS(file= "data/keygram_highest_data-data.RDS") 
 
 plot_lowest <-
   lowest_data |> 
@@ -653,7 +645,7 @@ p <- ggplot(corpus_by_artist, aes(x = reorder(artist, track_count), y = track_co
 
 
 
-boxplot <- ggplot(corpus_by_artist, aes(x = artist, y = track_duration)) +
+boxplot <- ggplot(corpus, aes(x = artist, y = track_duration_minutes)) +
               geom_boxplot() +
               theme_minimal() +
               labs(x = "Artist", y = "Track Length (minutes)", title = "Track Length Distribution Across Artists") +
@@ -750,11 +742,24 @@ Sidebar text
 
 # Artists {.storyboard data-navmenu="Musical Journey"}
 ### About page
-```{r}
 
-corpus$year
 
+
+### Methodology
+```{r career_cat_distribution_plot, echo=FALSE, fig.width=10, fig.height=6}
+  
+career_category_distribution <- ggplot(album_corpus_analysis, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    facet_wrap(~artist, scales = "free_y") +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
 ```
+
+***
+
+Sidebar
 
 ### Music
 ```{r}

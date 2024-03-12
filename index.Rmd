@@ -8,6 +8,9 @@ output:
     self_contained: false
 ---
 
+```{r, echo=FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
 
 
 ```{r setup, include=FALSE}
@@ -29,12 +32,12 @@ library(gridExtra)
 
 
 ```{r loading_data, include=FALSE}
-corpus <- readRDS(file="data/corpus-data.RDS")
+corpus_raw <- readRDS(file="data/corpus-data.RDS")
 
 ```
 ```{r transformations, include=FALSE}
 # basic data transformations
-corpus <- corpus %>%
+corpus_raw <- corpus_raw %>%
   mutate(track_info = paste(track.name, "-", track.album.name)) %>%
   mutate(year = substr(track.album.release_date, 1, 4)) %>%
   mutate(track_duration_minutes = track.duration_ms / 60000)
@@ -45,7 +48,7 @@ corpus <- corpus %>%
 # corpus grouped by albums
 
 # Grouping and summarizing the dataset
-album_corpus <- corpus %>%
+album_corpus <- corpus_raw %>%
   group_by(artist, track.album.name, track.album.release_date, year) %>%
   summarise(
     danceability_min = min(danceability, na.rm = TRUE),
@@ -110,7 +113,7 @@ album_corpus <- corpus %>%
 ```{r corpus_by_artist, include=FALSE} 
 # corpus grouped by artists
 
-corpus_by_artist <- corpus %>%
+corpus_by_artist <- corpus_raw %>%
   group_by(artist) %>%
   reframe(
     track_count = n(),  # Count of tracks per artist
@@ -139,6 +142,15 @@ album_corpus_analysis <- album_corpus %>%
     )
   ) %>%
   select(-career_length, -position_in_career, -career_fraction, -min_year_release_date, -max_year_release_date)  # Optionally remove intermediate columns
+
+
+```
+```{r, echo=FALSE}
+career_cat_album <- album_corpus_analysis %>%
+  select(track.album.name, career_cat)
+
+corpus <- corpus_raw %>%
+  left_join(career_cat_album, by = "track.album.name")
 
 ```
 
@@ -240,6 +252,7 @@ The first chromagram displays a song with the lowest combination of valence & en
 In comparison with the lower chromagram, which displays a song with the highest combination of valence & energy, we see a higher occurrence of pitch classes (9-11) throughout the whole song. This energetic song by Youssou N'Dour is typical for the Mbalax genre, known for its fast-stroking percussion, as also present in this song. The percussion would explain the diversity in occurrences of pitch classes.
 
 Overall, we could argue that the presence of a high diversity in pitch classes triggers Spotify to assign a higher Valence & Energy score.
+
 
 ### What does the structure of these outliers look like in self similarity matrices?
 ```{r data_setting_up}
@@ -771,54 +784,203 @@ Sidebar
 
 ### About the artist
 
-### Analysis
+```{r, echo=FALSE}
+beatles_corpus <- corpus %>%
+  filter(artist == "Beatles")
 
+career_category_distribution <- ggplot(beatles_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+
+### Analysis
+```{r, echo=FALSE, fig.width=15}
+
+valence <- ggplot(beatles_corpus, aes(x = valence, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+
+energy <- ggplot(beatles_corpus, aes(x = energy, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+
+
+
+```
+
+***
+
+sidebar text
 
 # Björk {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+```{r, echo=FALSE}
+bjork_corpus <- corpus %>%
+  filter(artist == "Bjork")
+```
+
 
 ### Analysis
+```{r}
+track_data <- ggplot(bjork_corpus, aes(x = track_duration_minutes, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+
+```
+
 
 # Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
 
-### About the artist
+```{r}
+caetano_veloso_corpus <- corpus %>%
+  filter(artist == "Caetano Veloso")
+```
+
 
 ### Analysis
+```{r}
+track_data <- ggplot(caetano_veloso_corpus, aes(x = valence, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+```
 
 # Daft Punk {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+```{r}
+daft_punk_corpus <- corpus %>%
+  filter(artist == "Daft Punk")
+```
+
 
 ### Analysis
+```{r}
+track_data <- ggplot(daft_punk_corpus, aes(x = valence, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+```
 
 # Fela Kuti {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+```{r}
+fela_kuti_corpus <- corpus %>%
+  filter(artist == "Fela Kuti")
+```
+
 
 ### Analysis
+```{r}
+track_data <- ggplot(fela_kuti_corpus, aes(x = valence, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+```
 
 # Miles Davis {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+```{r}
+miles_davis_corpus <- corpus %>%
+  filter(artist == "Miles Davis")
+```
+
 
 ### Analysis
+```{r}
+track_data <- ggplot(miles_davis_corpus, aes(x = track_duration_minutes, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot of Energy by Career Category",
+       x = "Energy",
+       y = "Density",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+```
 
 # Radiohead {.storyboard data-navmenu="Musical Journey"}
+```{r}
+radiohead_corpus <- corpus %>%
+  filter(artist == "Radiohead")
+```
 
-### About the artist
 
 ### Analysis
+```{r}
+track_data <- ggplot(radiohead_corpus, aes(x = valence, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+```
 
 # RHCP {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+```{r}
+rhcp_corpus <- corpus %>%
+  filter(artist == "RHCP")
+```
+
 
 ### Analysis
+```{r}
+track_data <- ggplot(rhcp_corpus, aes(x = track_duration_minutes, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+```
+
 
 # Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+```{r}
+youssou_corpus <- corpus %>%
+  filter(artist == "Youssou N'Dour")
+```
+
 
 ### Analysis
+```{r}
+track_data <- ggplot(youssou_corpus, aes(x = valence, fill = career_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(title = "Density Plot by Career Category",
+       fill = "Career Category") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+ggplotly(track_data)
+```
 

@@ -25,6 +25,7 @@ library(compmus)
 library(cowplot)
 library(patchwork)
 library(gridExtra)
+library(RColorBrewer)
 ```
 
 
@@ -152,6 +153,16 @@ corpus <- corpus_raw %>%
 
 ```
 
+```{r density_plot_formula, include=FALSE}
+create_density_plot <- function(data, x_var, title, x_label) {
+  ggplot(data, aes_string(x = x_var, fill = "career_cat")) + # Use aes_string for dynamic variable names
+    geom_density(alpha = 0.5) + 
+    labs(title = title, x = x_label, fill = "Career Category") +
+    theme_minimal() +
+    scale_fill_brewer(palette = "Set1")
+}
+```
+
 
 ```{r outliers, include=FALSE}
 corpus_arranged <- corpus %>%
@@ -167,7 +178,7 @@ corpus_arranged <- corpus %>%
 ```
 # How do two outliers of my corpus look like? (w9){.storyboard data-navmenu=Homework} 
 
-### How doe the chroma features look like?
+### How do the chroma features look like?
 ```{r data_setup, include=FALSE}
 # Extracting track.id for Lowest combination
 lowest_track_id <- corpus_arranged %>%
@@ -549,7 +560,7 @@ On the left we see the keygrams for two songs in my corpus. These tracks are ext
 ### Histograms 
 
 
-```{r}
+```{r, echo=FALSE}
 
 corpus$mode <- as.factor(corpus$mode)
 corpus_counts <- corpus %>%
@@ -631,11 +642,8 @@ In the scatterplot we see the albums as dots, colored per artist. On the x and y
 
 # Tempigram {.storyboard data-navmenu=Homework}
 ### Histogram
-```{r}
-corpus
-```
 
-```{r}
+```{r, echo=FALSE, fig.height=6}
 
 # Define custom tempo bins
 bin_edges <- c(60, 90, 110, 130, 150, 170, 190, 210, Inf) # Adjusted for more detail and starts from 60
@@ -655,7 +663,8 @@ tempo_plot <- ggplot(corpus_counts, aes(x=tempo_bin, y=count)) +
   facet_wrap(~ playlist_name, scales="free_y") +
   labs(x="Tempo (BPM)", y="Count", title="Distribution of Tempo per artist") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle=45, hjust=1)) + 
+  theme(axis.text.x = element_text(angle=30, hjust=1, size=6),
+        axis.title.x = element_text(margin=margin(t=10, b=-20))) + 
   scale_fill_manual()
 
 # Convert to plotly object
@@ -832,6 +841,12 @@ Sidebar
 
 ### About the artist
 
+***
+Listen here to the Beatles:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/3WrFJ7ztbogyGnTHbHJFl2?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of the Beatles look like?
 ```{r, echo=FALSE}
 beatles_corpus <- corpus %>%
   filter(artist == "Beatles")
@@ -844,24 +859,31 @@ career_category_distribution <- ggplot(beatles_corpus, aes(x = career_cat, fill 
 ggplotly(career_category_distribution)
 ```
 
+***
+Sidebar text
 
 ### Analysis
-```{r, echo=FALSE, fig.width=15}
+```{r beatles_valence_energy, echo=FALSE, fig.width=10}
 
-valence <- ggplot(beatles_corpus, aes(x = valence, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
+# valence <- ggplot(beatles_corpus, aes(x = valence, fill = career_cat)) +
+#   geom_density(alpha = 0.5) + 
+#   labs(title = "Density Plot by Career Category", x = "Valence",
+#        fill = "Career Category") +
+#   theme_minimal() +
+#   scale_fill_brewer(palette = "Set1")
+# 
+# energy <- ggplot(beatles_corpus, aes(x = energy, fill = career_cat)) +
+#   geom_density(alpha = 0.5) + 
+#   labs(title = "Density Plot by Career Category", x = "Energy",
+#        fill = "Career Category") +
+#   theme_minimal() +
+#   scale_fill_brewer(palette = "Set1")
 
-energy <- ggplot(beatles_corpus, aes(x = energy, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
+valence_plot <- create_density_plot(beatles_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(beatles_corpus, "energy", "Density Plot by Career Category", "Energy")
 
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
 
 
 ```
@@ -873,43 +895,72 @@ sidebar text
 # Björk {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+
+***
+Listen to Björk:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7w29UYBi0qsHi5RTcv3lmA?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Björk look like?
 ```{r, echo=FALSE}
 bjork_corpus <- corpus %>%
   filter(artist == "Bjork")
+
+career_category_distribution <- ggplot(bjork_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
 ```
+
 
 
 ### Analysis
-```{r}
-track_data <- ggplot(bjork_corpus, aes(x = track_duration_minutes, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
+```{r bjork_valence_energy, fig.width=10}
+valence_plot <- create_density_plot(beatles_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(beatles_corpus, "energy", "Density Plot by Career Category", "Energy")
 
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
 ```
-
+***
+Sidebar text
 
 # Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
+### About the artist
 
+
+***
+Listen to Caetano Veloso here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7HGNYPmbDrMkylWqeFCOIQ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Caetano Veloso look like?
 ```{r}
 caetano_veloso_corpus <- corpus %>%
   filter(artist == "Caetano Veloso")
-```
 
+career_category_distribution <- ggplot(caetano_veloso_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
 
 ### Analysis
-```{r}
-track_data <- ggplot(caetano_veloso_corpus, aes(x = valence, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
+```{r caetano_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(caetano_veloso_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(caetano_veloso_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+
 ```
+***
+Sidebar text
 
 # Daft Punk {.storyboard data-navmenu="Musical Journey"}
 
@@ -917,118 +968,206 @@ ggplotly(track_data)
 ```{r}
 daft_punk_corpus <- corpus %>%
   filter(artist == "Daft Punk")
-```
 
+career_category_distribution <- ggplot(daft_punk_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+***
+Listen to Daft Punk here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2Foc5Q5nqNiosCNqttzHof?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
 ### Analysis
-```{r}
-track_data <- ggplot(daft_punk_corpus, aes(x = valence, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
+```{r daft_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(daft_punk_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(daft_punk_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
 ```
+***
+Sidebar text
 
 # Fela Kuti {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+
+***
+Listen to Fela Kuti here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/5CG9X521RDFWCuAhlo6QoR?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Fela Kuti look like?
+
 ```{r}
 fela_kuti_corpus <- corpus %>%
   filter(artist == "Fela Kuti")
+
+career_category_distribution <- ggplot(fela_kuti_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
 ```
 
+***
+Sidebar text
 
 ### Analysis
-```{r}
-track_data <- ggplot(fela_kuti_corpus, aes(x = valence, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
+```{r fela_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(fela_kuti_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(fela_kuti_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
 ```
+***
+Sidebar text
 
 # Miles Davis {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+*** 
+Listen to Miles Davis here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0kbYTNQb4Pb1rPbbaF0pT4?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Miles Davis look like?
 ```{r}
 miles_davis_corpus <- corpus %>%
   filter(artist == "Miles Davis")
+
+career_category_distribution <- ggplot(miles_davis_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
 ```
 
+***
+Sidebar
 
 ### Analysis
-```{r}
-track_data <- ggplot(miles_davis_corpus, aes(x = track_duration_minutes, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot of Energy by Career Category",
-       x = "Energy",
-       y = "Density",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
-```
+```{r miles_valence_energy, fig.width=10}
+ # Use the function to create plots
+valence_plot <- create_density_plot(miles_davis_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(miles_davis_corpus, "energy", "Density Plot by Career Category", "Energy")
 
-# Radiohead {.storyboard data-navmenu="Musical Journey"}
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+***
+Sidebar text
+
+# Radiohead {.storyboard data-navmenu="Musical Journey"} 
+### About the artist
+
+
+***
+Listen to Radiohead here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/4Z8W4fKeB5YxbusRsdQVPb?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+### How does the career of Radiohead look like?
+
 ```{r}
 radiohead_corpus <- corpus %>%
   filter(artist == "Radiohead")
+
+career_category_distribution <- ggplot(radiohead_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
 ```
 
+***
+Sidebar text
 
 ### Analysis
-```{r}
-track_data <- ggplot(radiohead_corpus, aes(x = valence, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
+```{r radiohead_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(radiohead_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(radiohead_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
 ```
+***
+Sidebar text
 
 # RHCP {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+***
+Listen to Red Hot Chili Peppers here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0L8ExT028jH3ddEcZwqJJ5?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+### How does the career of Red Hot Chili Peppers look like?
 ```{r}
 rhcp_corpus <- corpus %>%
   filter(artist == "RHCP")
+
+career_category_distribution <- ggplot(rhcp_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
 ```
 
-
+***
+Sidebar text
 ### Analysis
-```{r}
-track_data <- ggplot(rhcp_corpus, aes(x = track_duration_minutes, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
-```
+```{r rhcp_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(rhcp_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(rhcp_corpus, "energy", "Density Plot by Career Category", "Energy")
 
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+***
+Sidebar text
 
 # Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
+***
+Listen to Youssou N'Dour here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/77zlytAFjPFjUKda8TNIDY?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+### How does the career of Youssou N'Dour look like?
 ```{r}
 youssou_corpus <- corpus %>%
   filter(artist == "Youssou N'Dour")
+
+career_category_distribution <- ggplot(youssou_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
 ```
-
-
+***
+Sidebar text
 ### Analysis
-```{r}
-track_data <- ggplot(youssou_corpus, aes(x = valence, fill = career_cat)) +
-  geom_density(alpha = 0.5) + 
-  labs(title = "Density Plot by Career Category",
-       fill = "Career Category") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set1")
-ggplotly(track_data)
+```{r youssou_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(youssou_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(youssou_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
 ```
+***
+Sidebar text
 

@@ -640,7 +640,7 @@ ggplotly(scattertje)
 In the scatterplot we see the albums as dots, colored per artist. On the x and y axis display the mean and standard deviation of tempo respectively. Because the standard deviation is calculated per album, it's generally quite high but also for most artists the same. For artist like Caetano Veloso, Fela Kuti and Miles Davis we see their albums spread out over both axes. For other artists we see their albums are more clustered together.
 
 
-# Tempigram {.storyboard data-navmenu=Homework}
+# Tempigram (w11) {.storyboard data-navmenu=Homework}
 ### Histogram
 
 ```{r, echo=FALSE, fig.height=6}
@@ -678,7 +678,17 @@ interactive_plot
 
 
 ***
-Sidebar text
+With a tempogram for each artist, we aim to explore relations between tempo and the music produced by these artists. An interesting takeaway from this visual is the distribution of tempo for Radiohead and Björk. 
+
+When considering tempo both Björk and Radiohead have indeed produced music that spans a broad spectrum, from slower, more contemplative tracks to faster, more rhythmically intense ones. Their discographies show a willingness to explore different tempos to suit the mood or message of each song.
+
+For instance, Radiohead's "Everything in Its Right Place" from the album "Kid A" has a moderate tempo that creates a hypnotic and immersive listening experience, somewhat reflective of their exploration into electronic and experimental music. On the other hand, "Bodysnatchers" from "In Rainbows" has a much more aggressive tempo that conveys a sense of urgency and intensity.
+
+Similarly, Björk's work ranges from the slower, haunting melodies of "Jóga" from "Homogenic" to the brisk, energetic beats of "Big Time Sensuality" from "Debut." Her use of tempo is often closely tied to the emotional or thematic content of her music, employing it as another layer of expression within her diverse soundscapes.
+
+While the specific tempos of their songs might occasionally align, it's essential to note that tempo is just one aspect of their music. The overall feel and impact of a song also depend on other elements like rhythm, melody, instrumentation, and production techniques, areas where their individual styles and preferences become more pronounced.
+
+In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
 
 # Introduction {.storyboard data-navmenu=Introduction}
 ### Introduction  

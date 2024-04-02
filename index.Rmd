@@ -1243,29 +1243,6 @@ interactive_plot
 As well for the keygrams for each part of his career, they've stayed roughly the same. His growth period is the only remarkablegraph, but it could be because of the small amount of tracks Youssou N'Dour released in that period.
 
 # Conclusions {.storyboard}
-### Valence and energy deepdive 
-
-```{r valence_energy_deepdive, echo=FALSE}
-track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = career_cat, text = track_info, alpha = 0.9)) +
-  geom_point() +
-  facet_wrap(~artist) +
-  labs(title = "Valence vs Energy colored by danceability per artist", x = "Energy", y = "Valence") + # Title for the color scale
-  theme_minimal() +
-  guides(alpha = none) + # Optionally, remove the alpha guide if not needed
-  theme(legend.text = element_text(size = 12),  # Increase legend text size
-        legend.key.size = unit(1, "lines"),  # Increase legend key size
-        legend.position = "none")  # Remove the legend
-
-# Convert to plotly object with tooltips
-track_plotly <- ggplotly(track_plot, tooltip = "text")
-
-# Print the plotly plot
-track_plotly
-```
-
-***
-Sidebar
-
 ### Valence and energy throughout the years
 ```{r conclusion_valence_energy, echo=FALSE}
 artist_album_corpus <- corpus %>%
@@ -1294,17 +1271,18 @@ ggplotly(facet_wrapped_valence_energy)
 ```
 
 ***
-Sidebar
+For some artists  we see a decline in energy and valence; The Beatles, Björk, Daft Punk and Radiohead. Common denominators between these artists is the fact that they were prominent EU based artists throughout their careers. They also have experienced all with multiple genres of music. 
+
+Other artists, who have experienced less with genres throughout their music journey seem to have changed less over time within the researched topics. Artists like Caetano Veloso, Fela Kuti, Miles Davis, RHCP and Youssou N'Dour are mostly all known for 1 genre respectively. Hence they show less change throughout their careers in topics like energy and valence.
 
 ### Tempo and song duration throughout the years
 ```{r tempo_duration, echo=FALSE}
 
 
 facet_wrapped_tempo_duration <- ggplot(artist_album_corpus, aes(x = career_cat, y = mean_tempo, size = mean_track_duration )) +
-  geom_line() + # or geom_point() if you prefer dots over lines
-  geom_point() +
+  geom_point() + # or geom_point() if you prefer dots over lines
   facet_wrap(~ artist, scales = "free_x") + # Adjust ncol as needed for layout
-  labs(title = "Mean Valence and Mean Energy per Career Category by Artist",
+  labs(title = "Tempo  per Career Category by Artist (sized by track duration)",
        x = "Career Category",
        y = "Mean Value",
        color = "Metric") +
@@ -1316,146 +1294,19 @@ ggplotly(facet_wrapped_tempo_duration)
 ```
 
 ***
-Sidebar text
+For topics like tempo and track duration, the conclusion of valence and energy seems to be almost vice versa. For these topics it's the artists like Bjork, Caetano Veloso, Fela Kuti, Miles Davis and Youssou N'Dour who show the biggest changes in tempo and track duration throughout their career. Remarkably enough, Björk and RHCP have "switched".  
 
+### Contribution
+The contribution of this study lies in its  exploration of how artists evolve musically over the course of their careers, with a focus on several key metrics: energy, valence, tempo, and track duration. My findings highlight the intricate relationship between an artist's musical diversity—specifically, their engagement with multiple genres—and changes in their music's emotional and dynamic qualities over time.
 
-# Clustering (w12) {.storyboard data-navmenu="Required visuals"}
-### Histogram
+One significant contribution of our analysis is the identification of patterns of change in energy and valence among artists who have been highly experimental with genres throughout their careers. Notably, European-based artists like The Beatles, Björk, Daft Punk, and Radiohead exhibit a decline in both energy and valence, suggesting a potential correlation between geographical location/social dynamics and genre experimentation with changes in these musical attributes. This observation opens up new avenues for understanding how cultural and regional influences might affect musical evolution.
 
-```{r, include=FALSE}
-# corpus_raw <- readRDS(file="data/corpus-data.RDS")
-# beatles_corpus <- corpus_raw %>%
-#   filter(artist == "Daft Punk")
-# 
-# halloween <-
-#   # get_playlist_audio_features("bnfcollection", "1vsoLSK3ArkpaIHmUaF02C") |>
-#   beatles_corpus |>
-#   add_audio_analysis() |>
-#   mutate(
-#     segments = map2(segments, key, compmus_c_transpose),
-#     pitches =
-#       map(segments,
-#         compmus_summarise, pitches,
-#         method = "mean", norm = "manhattan"
-#       ),
-#     timbre =
-#       map(
-#         segments,
-#         compmus_summarise, timbre,
-#         method = "mean"
-#       )
-#   ) |>
-#   mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
-#   mutate_at(vars(pitches, timbre), map, bind_rows) |>
-#   unnest(cols = c(pitches, timbre))
+Conversely, our study reveals that artists predominantly associated with a single genre—such as Caetano Veloso, Fela Kuti, Miles Davis, Red Hot Chili Peppers, and Youssou N'Dour—demonstrate less variability in energy and valence. This stability points to the influence of genre fidelity on maintaining consistent emotional and dynamic qualities in music, offering a contrasting perspective to the narrative of musical change.
 
+Furthermore, the analysis extends to how tempo and track duration contrast with findings on energy and valence. Artists who have shown significant variability in their engagement with different genres also exhibit notable changes in tempo and track duration, except for a notable "switch" between artists like Björk and the Red Hot Chili Peppers compared to the trends observed in energy and valence. This inverse relationship between the sets of metrics underscores the complexity of musical evolution, suggesting that changes in one aspect of music may not always align with changes in others.
 
-```
+In sum, this study contributes to the broader discourse on musical evolution by providing empirical evidence of how genre experimentation and geographical factors may influence key musical characteristics over an artist's career. It challenges the simplistic notion of linear musical evolution and instead presents a multifaceted view that considers the impact of various external and intrinsic factors. This research not only enriches our understanding of musical dynamics but also lays the groundwork for future studies into the socio-cultural, technological, and personal factors that drive the musical journeys of artists.
 
-```{r}
-
-
-# halloween_juice <-
-#   recipe(
-#     track.name ~
-#       danceability +
-#       energy +
-#       loudness +
-#       speechiness +
-#       acousticness +
-#       instrumentalness +
-#       liveness +
-#       valence +
-#       tempo +
-#       duration +
-#       C + `C#|Db` + D + `D#|Eb` +
-#       E + `F` + `F#|Gb` + G +
-#       `G#|Ab` + A + `A#|Bb` + B +
-#       c01 + c02 + c03 + c04 + c05 + c06 +
-#       c07 + c08 + c09 + c10 + c11 + c12,
-#     data = halloween
-#   ) |>
-#   step_center(all_predictors()) |>
-#   step_scale(all_predictors()) |> 
-#   prep(halloween |> mutate(track.name = str_trunc(track.name, 20))) |>
-#   juice() |>
-#   mutate(track.name = paste(track.name, row_number(), sep = "_")) |>
-#   column_to_rownames("track.name")
-
-```
-
-```{r}
-# halloween_dist <- dist(halloween_juice, method = "euclidean")
-
-```
-
-```{r}
-# halloween_dist |> 
-#   hclust(method = "average") |> # Try single, average, and complete.
-#   dendro_data() |>
-#   ggdendrogram()
-```
-
-```{r, echo=FALSE, fig.height=6}
-
-# print("hello")
-
-
-```
-
-
-***
-Sidebar text
-
-# Tempigram (w11) {.storyboard data-navmenu="Required visuals"}
-### Histogram
-
-```{r, echo=FALSE, fig.height=6}
-
-# Define custom tempo bins
-bin_edges <- c(60, 90, 110, 130, 150, 170, 190, 210, Inf) # Adjusted for more detail and starts from 60
-bin_labels <- c("60-90", "90-110", "110-130", "130-150", "150-170", "170-190", "190-210", "210+") # Updated labels
-corpus$tempo_bin <- cut(corpus$tempo, breaks=bin_edges, labels=bin_labels, include.lowest=TRUE, right=FALSE)
-
-
-# Calculate counts within each bin for each playlist
-corpus_counts <- corpus %>%
-  filter(tempo > 60 & tempo <= 190) %>%
-  group_by(playlist_name, tempo_bin) %>%
-  summarise(count = n(), .groups = 'drop')
-
-# Plot
-tempo_plot <- ggplot(corpus_counts, aes(x=tempo_bin, y=count)) +
-  geom_bar(stat="identity", position="stack", fill="#4CAF50") +
-  facet_wrap(~ playlist_name, scales="free_y") +
-  labs(x="Tempo (BPM)", y="Count", title="Distribution of Tempo per artist") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle=30, hjust=1, size=6),
-        axis.title.x = element_text(margin=margin(t=10, b=-20))) + 
-  scale_fill_manual()
-
-# Convert to plotly object
-interactive_plot <- ggplotly(tempo_plot)
-
-# Display the interactive plot
-interactive_plot
-
-
-```
-
-
-***
-With a tempogram for each artist, we aim to explore relations between tempo and the music produced by these artists. An interesting takeaway from this visual is the distribution of tempo for Radiohead and Björk. 
-
-When considering tempo both Björk and Radiohead have indeed produced music that spans a broad spectrum, from slower, more contemplative tracks to faster, more rhythmically intense ones. Their discographies show a willingness to explore different tempos to suit the mood or message of each song.
-
-For instance, Radiohead's "Everything in Its Right Place" from the album "Kid A" has a moderate tempo that creates a hypnotic and immersive listening experience, somewhat reflective of their exploration into electronic and experimental music. On the other hand, "Bodysnatchers" from "In Rainbows" has a much more aggressive tempo that conveys a sense of urgency and intensity.
-
-Similarly, Björk's work ranges from the slower, haunting melodies of "Jóga" from "Homogenic" to the brisk, energetic beats of "Big Time Sensuality" from "Debut." Her use of tempo is often closely tied to the emotional or thematic content of her music, employing it as another layer of expression within her diverse soundscapes.
-
-While the specific tempos of their songs might occasionally align, it's essential to note that tempo is just one aspect of their music. The overall feel and impact of a song also depend on other elements like rhythm, melody, instrumentation, and production techniques, areas where their individual styles and preferences become more pronounced.
-
-In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
 
 # Chroma features?  (w9){.storyboard data-navmenu="Required visuals"} 
 
@@ -1919,4 +1770,138 @@ ggplotly(scattertje)
 ***
 
 In the scatterplot we see the albums as dots, colored per artist. On the x and y axis display the mean and standard deviation of tempo respectively. Because the standard deviation is calculated per album, it's generally quite high but also for most artists the same. For artist like Caetano Veloso, Fela Kuti and Miles Davis we see their albums spread out over both axes. For other artists we see their albums are more clustered together.
+
+
+# Tempigram (w11) {.storyboard data-navmenu="Required visuals"}
+### Histogram
+
+```{r, echo=FALSE, fig.height=6}
+
+# Define custom tempo bins
+bin_edges <- c(60, 90, 110, 130, 150, 170, 190, 210, Inf) # Adjusted for more detail and starts from 60
+bin_labels <- c("60-90", "90-110", "110-130", "130-150", "150-170", "170-190", "190-210", "210+") # Updated labels
+corpus$tempo_bin <- cut(corpus$tempo, breaks=bin_edges, labels=bin_labels, include.lowest=TRUE, right=FALSE)
+
+
+# Calculate counts within each bin for each playlist
+corpus_counts <- corpus %>%
+  filter(tempo > 60 & tempo <= 190) %>%
+  group_by(playlist_name, tempo_bin) %>%
+  summarise(count = n(), .groups = 'drop')
+
+# Plot
+tempo_plot <- ggplot(corpus_counts, aes(x=tempo_bin, y=count)) +
+  geom_bar(stat="identity", position="stack", fill="#4CAF50") +
+  facet_wrap(~ playlist_name, scales="free_y") +
+  labs(x="Tempo (BPM)", y="Count", title="Distribution of Tempo per artist") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle=30, hjust=1, size=6),
+        axis.title.x = element_text(margin=margin(t=10, b=-20))) + 
+  scale_fill_manual()
+
+# Convert to plotly object
+interactive_plot <- ggplotly(tempo_plot)
+
+# Display the interactive plot
+interactive_plot
+
+
+```
+
+
+***
+With a tempogram for each artist, we aim to explore relations between tempo and the music produced by these artists. An interesting takeaway from this visual is the distribution of tempo for Radiohead and Björk. 
+
+When considering tempo both Björk and Radiohead have indeed produced music that spans a broad spectrum, from slower, more contemplative tracks to faster, more rhythmically intense ones. Their discographies show a willingness to explore different tempos to suit the mood or message of each song.
+
+For instance, Radiohead's "Everything in Its Right Place" from the album "Kid A" has a moderate tempo that creates a hypnotic and immersive listening experience, somewhat reflective of their exploration into electronic and experimental music. On the other hand, "Bodysnatchers" from "In Rainbows" has a much more aggressive tempo that conveys a sense of urgency and intensity.
+
+Similarly, Björk's work ranges from the slower, haunting melodies of "Jóga" from "Homogenic" to the brisk, energetic beats of "Big Time Sensuality" from "Debut." Her use of tempo is often closely tied to the emotional or thematic content of her music, employing it as another layer of expression within her diverse soundscapes.
+
+While the specific tempos of their songs might occasionally align, it's essential to note that tempo is just one aspect of their music. The overall feel and impact of a song also depend on other elements like rhythm, melody, instrumentation, and production techniques, areas where their individual styles and preferences become more pronounced.
+
+In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
+
+
+# Clustering (w12) {.storyboard data-navmenu="Required visuals"}
+### A dendogram of Björk's songs
+
+```{r, include=FALSE}
+corpus_raw <- readRDS(file="data/corpus-data.RDS")
+beatles_corpus <- corpus_raw %>%
+  filter(artist == "Bjork")
+
+halloween <-
+  beatles_corpus |>
+  add_audio_analysis() |>
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  mutate_at(vars(pitches, timbre), map, bind_rows) |>
+  unnest(cols = c(pitches, timbre))
+
+
+```
+
+```{r}
+
+
+halloween_juice <-
+  recipe(
+    track.name ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    data = halloween
+  ) |>
+  step_center(all_predictors()) |>
+  step_scale(all_predictors()) |>
+  prep(halloween |> mutate(track.name = str_trunc(track.name, 20))) |>
+  juice() |>
+  mutate(track.name = paste(track.name, row_number(), sep = "_")) |>
+  column_to_rownames("track.name")
+
+```
+
+```{r}
+halloween_dist <- dist(halloween_juice, method = "euclidean")
+
+```
+
+```{r}
+halloween_dist |>
+  hclust(method = "average") |> # Try single, average, and complete.
+  dendro_data() |>
+  ggdendrogram()
+```
+
+
+
+
+***
+Here we see a dendogram of Björk's songs
 

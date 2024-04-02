@@ -583,7 +583,7 @@ interactive_plot
 ```
 
 ***
-The Beatles have mostly used major keys in their work, which is consistant throughout their whole career. During all parts of their career the Beatles seem to maintain the use of the same keys in their songs. It's only the "Late" career which contains very evenly distributed songs.  This could also be because of the small amount of songs that fall into the "Late" category, consisting of 12 songs (n > 30 is normally needed in order to create a sufficient distribution).
+The Beatles have mostly used major keys in their work, which is consistent throughout their whole career. During all parts of their career the Beatles seem to maintain the use of the same keys in their songs. It's only the "Late" career which contains very evenly distributed songs.  This could also be because of the small amount of songs that fall into the "Late" category, consisting of 12 songs (n > 30 is normally needed in order to create a sufficient distribution).
 
 
 # Björk {.storyboard data-navmenu="Musical Journey"}
@@ -721,7 +721,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Caetano Veloso is one of the few artist to have kept a very consistant level of valence and energy throughout is whole career. 
+Caetano Veloso is one of the few artist to have kept a very constant level of valence and energy throughout is whole career. 
 
 ### How have tempo and track duration changed?
 ```{r caetano_tempo_duration, fig.width=10}
@@ -888,7 +888,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Fela Kuti's valence and energy scores are very consistant throughout his whole career. This could also be because of the small size of songs created in his Growth, Late and Mature years. 
+Fela Kuti's valence and energy scores are very consistent throughout his whole career. This could also be because of the small size of songs created in his Growth, Late and Mature years. 
 
 ### How have tempo and track duration changed?
 ```{r fela_tempo_duration, fig.width=10}
@@ -993,7 +993,7 @@ interactive_plot
 ```
 
 ***
-Throughout his whoel
+Throughout his whole career Miles Davis has used roughly the same distribution of keys and modes.
 
 
 # Radiohead {.storyboard data-navmenu="Musical Journey"} 
@@ -1052,7 +1052,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Sidebar text
+Radiohead is one of the few artists to have a big gap between valence and energy. While both measures have steadily declined throughout the first 3 phases of their career, they were almost more than ever during their most recent phase of their career.
 
 ### How have tempo and track duration changed?
 ```{r radiohead_tempo_duration, fig.width=10}
@@ -1064,7 +1064,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
-Sidebar text
+While Radiohead changed throughout their career with the average of valence and energy, this can't be said about tempo and track duration. Both last named measures have been quite constant throughout their career.
 
 ### A key career change?
 ```{r radiohead_keys, echo=FALSE}
@@ -1073,7 +1073,7 @@ interactive_plot
 ```
 
 ***
-Sidebar
+Remarkable from the keygrams per career category is the growth of minor modes throughout their career. This would align with the decline in valence, since minor modes are often linked to sadder songs, but Radiohead's mature career category displays a high amount of minor modes but still scores high on average for valence.
 
 
 # RHCP {.storyboard data-navmenu="Musical Journey"}
@@ -1135,6 +1135,7 @@ ggplotly(grouped_bar_chart)
 
 ***
 Sidebar text
+
 ### How have tempo and track duration changed?
 ```{r rhcp_tempo_duration, fig.width=10}
 tempo_plot <- create_density_plot(rhcp_corpus, "tempo", "Density Plot by Career Category", "Tempo")

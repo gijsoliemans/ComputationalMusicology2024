@@ -230,43 +230,26 @@ The albums selected showcase each artist's characteristic style and include trac
 ### Artist overview
 
 ```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
-# Create a ggplot object
-# catalog_size <- ggplot(corpus_by_artist, aes(x = reorder(artist, track_count), y = track_count, fill = artist)) +
-#   geom_bar(stat = "identity") +
-#   theme_minimal() +
-#   labs(x = "Artist Name", y = "Size", title = "Catalog Size of Artists") +
-#   coord_flip() # Flipping coordinates for better readability
-# 
-# catalog_length <- ggplot(corpus_by_artist, aes(x = reorder(artist, average_duration), y = average_duration, fill = artist)) +
-#     geom_bar(stat = "identity") +
-#     theme_minimal() +
-#     labs(x = "Artist Name", y = "Length", title = "Catalog Length of Artists") +
-#     coord_flip() #
-# 
-# plot_grid(catalog_size, catalog_length,
-#           nrow= 2)
-
 corpus_long <- corpus_by_artist %>%
   pivot_longer(cols = c(track_count, average_duration), 
                names_to = "Metric", 
                values_to = "Value")
 
-# Plot with faceting
-ggplot(corpus_long, aes(x = reorder(artist, Value), y = Value, fill = artist)) +
+my_labels <- c(track_count = "Amount of tracks", average_duration = "Average duration per track")
+
+catalog_bar_charts <- ggplot(corpus_long, aes(x = reorder(artist, Value), y = Value, fill = artist)) +
   geom_bar(stat = "identity") +
-  facet_wrap(~ Metric, scales = "free_x", labeller = label_parsed) +
+  facet_wrap(~ Metric, scales = "free_x", labeller = labeller(Metric = as_labeller(my_labels))) +
   theme_minimal() +
-  labs(x = "Artist Name", y = "Value") +
+  labs(x = "Artist Name", y = " ", title = "Catalog size by artist", fill = "Artist") +  # Added a plot title
   coord_flip() +
   theme(axis.text.y = element_text(angle = 45, hjust = 1))
 
-
-
-
+ggplotly(catalog_bar_charts)
 ```
 
 ***
-Here comes a sidebar
+The dual bar chart provides a comparative analysis of several artists within a music corpus. On the left side, the average duration per track is illustrated, where Caetano Veloso shows a relatively standard track length yet possesses an expansive catalog, hinting at a prolific career. In contrast, Fela Kuti's representation reveals a smaller number of total tracks, but each with a significantly extended duration, perhaps indicating extended instrumental characteristics of his Afrobeat style. Miles Davis's position in the middle reflects a balance within these outliers, with a high average track length consistent with jazz compositions and a substantial total track count, underscoring his extensive contribution to music. This information is crucial for corpus analysis as it underscores stylistic choices that influence various aspects of music analysis.
 
 ### Which artist makes the most happy and energetic songs?
 
@@ -325,7 +308,7 @@ Upon a close look of the plot, the albums of each artist seem to cluster both to
 track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
   geom_point() +
   facet_wrap(~artist) +
-  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
+  labs(title = "Valence vs Energy colored by danceability per artist", x = "Energy", y = "Valence") + # Title for the color scale
   theme_minimal() +
   guides(alpha = none) + # Optionally, remove the alpha guide if not needed
   theme(legend.text = element_text(size = 12),  # Increase legend text size

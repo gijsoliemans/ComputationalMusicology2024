@@ -487,9 +487,11 @@ ggplotly(career_category_distribution)
 
 
 ***
-For each artist in my corpus the following topics are discussed: energy, valence, tempo, track length, key. By combining these topics we create a fundament to try to understand the music of an artist.  
-In order to create insights in the musical journey of artists I've adjusted the corpus for every artist in 4 "career categories"
+For each artist in my corpus, we delve into the following topics: energy, valence, tempo, track length, and key. These elements are pivotal in constructing a foundational understanding of an artist's musical expression. Energy levels help us gauge the intensity, valence measures the positivity conveyed, tempo gives the music's pace, track length offers insight into artists' exploratory tendencies, and the key provides a glimpse into the harmonic characteristics.
 
+To glean insights into the musical journey of artists, I've segmented the corpus for every artist into four distinct 'career categories' by evenly dividing their career span. This approach allows us to observe the evolution of their musical output and stylistic shifts. On the analytical front, we utilize album distribution across these categories as a lens to view their career progression. A common pattern emerges showing an initial phase of prolific output, gradually tapering off in later years, indicative of various artistic and external influences at play.
+
+In conclusion, this multifaceted analysis charts the musical journey of artists through their careers but also sheds light on artistic development. This study opens avenues for further exploration into the interconnectedness of musical elements, career phases, and the ever-changing music industry landscape.
 
 # Beatles {.storyboard data-navmenu="Musical Journey"}
 

@@ -29,6 +29,7 @@ library(RColorBrewer)
 library(tidymodels)
 library(ggdendro)
 library(heatmaply)
+library(png)
 ```
 
 
@@ -198,83 +199,708 @@ get_pr <- function(fit) {
 }  
 ```
 
+
+# Introduction {.storyboard data-navmenu=Introduction}
+### Introduction  
+```{r intro_overview, echo=FALSE}
+image_path <- "index_files/figure-html/artists_grid.png"  # Replace with the actual path to your PNG image file
+
+# Load the PNG image
+image <- png::readPNG(image_path)
+
+# Display the image
+par(mar = rep(0, 4))  # Remove margins
+plot.new()  # Create new plot
+plot.window(xlim = c(0, 1), ylim = c(0, 1), asp = 1)  # Set plot window with aspect ratio 1
+rasterImage(image, 0, 0, 1, 1)  # Display the image
+
+
+```
+
+
+***
+On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
+
+This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
+
+The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
+
+The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
+
+### Artist overview
+
+```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
+# Create a ggplot object
+# catalog_size <- ggplot(corpus_by_artist, aes(x = reorder(artist, track_count), y = track_count, fill = artist)) +
+#   geom_bar(stat = "identity") +
+#   theme_minimal() +
+#   labs(x = "Artist Name", y = "Size", title = "Catalog Size of Artists") +
+#   coord_flip() # Flipping coordinates for better readability
+# 
+# catalog_length <- ggplot(corpus_by_artist, aes(x = reorder(artist, average_duration), y = average_duration, fill = artist)) +
+#     geom_bar(stat = "identity") +
+#     theme_minimal() +
+#     labs(x = "Artist Name", y = "Length", title = "Catalog Length of Artists") +
+#     coord_flip() #
+# 
+# plot_grid(catalog_size, catalog_length,
+#           nrow= 2)
+
+corpus_long <- corpus_by_artist %>%
+  pivot_longer(cols = c(track_count, average_duration), 
+               names_to = "Metric", 
+               values_to = "Value")
+
+# Plot with faceting
+ggplot(corpus_long, aes(x = reorder(artist, Value), y = Value, fill = artist)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Metric, scales = "free_x", labeller = label_parsed) +
+  theme_minimal() +
+  labs(x = "Artist Name", y = "Value") +
+  coord_flip() +
+  theme(axis.text.y = element_text(angle = 45, hjust = 1))
+
+
+
+
+```
+
+***
+Here comes a sidebar
+
+### Which artist makes the most happy and energetic songs?
+
+```{r explorative_plot, echo=FALSE}
+# Step 1: Identify the points
+album_corpus <- album_corpus %>%
+  mutate(combination = energy_mean + valence_mean) %>%
+  arrange(combination) %>%
+  mutate(label_position = case_when(
+    row_number() == 1 ~ "Lowest",
+    row_number() == n() ~ "Highest",
+    TRUE ~ NA_character_
+  ))
+
+# Prepare the label text
+album_corpus$label_text <- ifelse(
+  !is.na(album_corpus$label_position),
+  paste(album_corpus$artist, album_corpus$track.album.name, sep = ", "),
+  NA
+)
+
+# Step 2: Plot with annotations
+explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = valence_mean, color = artist)) +
+    geom_point(aes(alpha = 0.4, size = danceability_mean)) +
+    geom_text(data = filter(album_corpus, !is.na(label_text)), 
+                aes(label = label_text), 
+                nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
+                check_overlap = TRUE, 
+                size = 2) +  # Adjust label size
+    labs(title = "Energy vs. valence colored by Artist with danceability Size",
+         x = "Energy",
+         y = "Valence",
+         color = "Artist",
+         size = "Danceability",
+         alpha = "Alpha") +
+    theme_minimal() +
+    guides(size = guide_legend(title = "Valence")) +
+    theme(legend.text = element_text(size = 12),  # Increase legend text size
+          legend.key.size = unit(1, "lines"))  # Increase legend key size
+
+ggplotly(explorative_plot)
+
+```
+
+***
+
+The plot included in this repository displays the distribution of track descriptives (energy, danceability and valence) of the selected corpus, grouped by albums where artists are displayed with color. All the data is extracted with the Spotify API by combining self constructed playlists. Each playlist contained all the studio album recordings of an artist, live recordings were ignored in this dataset.
+
+Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
+
+### Detailed artist overview
+
+```{r overview, echo=FALSE}
+# Static plot code here
+# Now, use 'track_info' in the 'text' aesthetic for tooltips
+track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
+  geom_point() +
+  facet_wrap(~artist) +
+  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
+  theme_minimal() +
+  guides(alpha = none) + # Optionally, remove the alpha guide if not needed
+  theme(legend.text = element_text(size = 12),  # Increase legend text size
+        legend.key.size = unit(1, "lines"),  # Increase legend key size
+        legend.position = "none")  # Remove the legend
+
+# Convert to plotly object with tooltips
+track_plotly <- ggplotly(track_plot, tooltip = "text")
+
+# Print the plotly plot
+track_plotly
+
+
+
+```
+
+***
+
+Sidebar text
+
+# How much do artists adhere to their albums? {.storyboard data-navmenu=Introduction}
+### This will be a page
+```{r}
+1+1
+```
+
+
+***
+
+Clustering algorithms?
+
+# Artists {.storyboard data-navmenu="Musical Journey"}
+### About page
+
+
+
+### Methodology
+```{r career_cat_distribution_plot, echo=FALSE, fig.width=10, fig.height=6}
+  
+career_category_distribution <- ggplot(album_corpus_analysis, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    facet_wrap(~artist, scales = "free_y") +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+
+***
+
+Sidebar
+
+### Music
+```{r}
+1+1
+```
+
+
+# Beatles {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+The Beatles, an English rock band formed in Liverpool in 1960, revolutionized the music industry and became a cultural phenomenon. Comprising John Lennon, Paul McCartney, George Harrison, and Ringo Starr, their musical journey is marked by an unparalleled legacy of innovation and diversity. Initially influenced by rock and roll and skiffle, their early hits were characterized by youthful energy and catchy melodies. As their career progressed, they ventured into a variety of genres, from folk, blues, and Indian music to psychedelia and hard rock, showcasing their versatility and pioneering spirit.
+
+Their albums, such as "Sgt. Pepper's Lonely Hearts Club Band," "Revolver," and "The White Album," are landmarks in the evolution of pop music, noted for their creative experimentation, sophisticated use of technology, and lyrical depth. The Beatles' impact extended beyond music; they influenced the social and cultural revolutions of the 1960s, challenging conventions and inspiring a generation.
+
+Despite disbanding in 1970, The Beatles' music remains timeless, continuing to inspire musicians and delight fans across generations. Their innovative recording techniques, songwriting skills, and profound influence on the music industry have cemented their status as one of the greatest and most important bands in history.
+
+***
+Listen here to the Beatles:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/3WrFJ7ztbogyGnTHbHJFl2?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of the Beatles look like?
+```{r, echo=FALSE}
+beatles_corpus <- corpus %>%
+  filter(artist == "Beatles")
+
+career_category_distribution <- ggplot(beatles_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+
+
+mean_energy <- beatles_corpus %>%
+  group_by(career_cat) %>%
+  summarise(mean_energy = mean(energy, na.rm = TRUE))
+ggplot(mean_energy, aes(x = career_cat, y = mean_energy, fill = career_cat)) +
+  geom_col() +
+  labs(x = "Career Category", y = "Mean Energy", fill = "Career Category") +
+  theme_minimal()
+
+mean_valence <- beatles_corpus %>%
+  group_by(career_cat) %>%
+  summarise(mean_valence = mean(valence, na.rm = TRUE))
+ggplot(mean_valence, aes(x = career_cat, y = mean_valence, fill = career_cat)) +
+  geom_col() +
+  labs(x = "Career Category", y = "Mean Energy", fill = "Career Category") +
+  theme_minimal()
+
+```
+
+***
+Sidebar text
+
+### Analysis
+```{r beatles_valence_energy, echo=FALSE, fig.width=10}
+
+# valence <- ggplot(beatles_corpus, aes(x = valence, fill = career_cat)) +
+#   geom_density(alpha = 0.5) + 
+#   labs(title = "Density Plot by Career Category", x = "Valence",
+#        fill = "Career Category") +
+#   theme_minimal() +
+#   scale_fill_brewer(palette = "Set1")
+# 
+# energy <- ggplot(beatles_corpus, aes(x = energy, fill = career_cat)) +
+#   geom_density(alpha = 0.5) + 
+#   labs(title = "Density Plot by Career Category", x = "Energy",
+#        fill = "Career Category") +
+#   theme_minimal() +
+#   scale_fill_brewer(palette = "Set1")
+
+valence_plot <- create_density_plot(beatles_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(beatles_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+
+
+```
+
+```{r}
+scatterPlot <- ggplot(beatles_corpus, aes(x = valence, y = energy, color = career_cat)) +
+    geom_jitter(alpha = 1) +
+    labs(title = "Scatter Plot by Career Category", x = "Valence", y = "Energy",
+         color = "Career Category") +
+    theme_minimal()
+ggplotly(scatterPlot)
+
+```
+***
+
+sidebar text
+
+# Björk {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+Björk, the Icelandic singer-songwriter and producer, has carved a unique path in the music industry with her avant-garde approach to music and multimedia art. Since her debut album in 1977, Björk's career has been a journey of constant evolution, blending electronic, classical, pop, and experimental music with an innovative flair that is distinctly her own. Her ethereal voice and eclectic style have garnered critical acclaim and a devoted global fanbase.
+
+Her work is characterized by a fearless exploration of new sounds and technologies, often incorporating elements of nature, technology, and personal emotion into a cohesive artistic vision. Albums like "Debut," "Post," and "Homogenic" showcase her ability to merge electronic music with heartfelt lyricism, while later works such as "Biophilia" and "Vulnicura" delve into more conceptual themes, reflecting her ongoing commitment to pushing musical boundaries.
+
+Björk's contributions to music are not limited to her albums; she has also been involved in film, multimedia projects, and activism, further highlighting her multifaceted talent and deep connection to her Icelandic roots. Her innovative use of visuals, including groundbreaking music videos and stage performances, has redefined the possibilities of the music album as an art form. Björk remains an influential figure in contemporary music, celebrated for her originality, artistic integrity, and the emotional depth of her work.
+
+
+***
+Listen to Björk:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7w29UYBi0qsHi5RTcv3lmA?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Björk look like?
+```{r, echo=FALSE}
+bjork_corpus <- corpus %>%
+  filter(artist == "Bjork")
+
+career_category_distribution <- ggplot(bjork_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+
+
+### Analysis
+```{r bjork_valence_energy, fig.width=10}
+valence_plot <- create_density_plot(beatles_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(beatles_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+
+***
+
+Sidebar text
+
+# Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
+### About the artist
+Caetano Veloso, a cornerstone of Brazilian music, has been a pivotal figure in the Tropicália movement, blending traditional Brazilian sounds with global musical influences. Since the late 1960s, Veloso has been crafting songs that weave together samba, bossa nova, rock, and folk, among other genres, making him a symbol of cultural fusion and innovation. His music not only delights the ear but also engages the mind, often addressing themes of political resistance, social justice, and personal identity.
+
+Veloso's early work was marked by his opposition to Brazil's military dictatorship, leading to his arrest and forced exile in the late 1960s. This period of hardship only fueled his creativity, resulting in poignant albums that reflected his experiences and insights. Upon his return to Brazil, Veloso continued to explore and innovate, becoming an influential figure in the MPB (Música Popular Brasileira) genre.
+
+His discography is vast and varied, with albums like "Transa," "Estrangeiro," and "Livro" showcasing his skill as a composer and his ability to cross cultural and musical borders. Veloso's impact extends beyond his music; he is a respected intellectual and has been a powerful voice for LGBTQ+ rights and environmental activism in Brazil.
+
+Now in the fifth decade of his career, Caetano Veloso remains a vibrant and relevant artist, revered for his lyrical genius, musical versatility, and commitment to social causes. His work continues to inspire new generations of musicians and activists alike, solidifying his legacy as a master of Brazilian music and a champion for human rights.
+
+***
+Listen to Caetano Veloso here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7HGNYPmbDrMkylWqeFCOIQ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Caetano Veloso look like?
+```{r}
+caetano_veloso_corpus <- corpus %>%
+  filter(artist == "Caetano Veloso")
+
+career_category_distribution <- ggplot(caetano_veloso_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+### Analysis
+```{r caetano_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(caetano_veloso_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(caetano_veloso_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+
+```
+***
+Sidebar text
+
+# Daft Punk {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+```{r, include=FALSE}
+daft_punk_corpus <- corpus %>%
+  filter(artist == "Daft Punk")
+
+career_category_distribution <- ggplot(daft_punk_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+Daft Punk, the French electronic music duo formed in 1993 by Thomas Bangalter and Guy-Manuel de Homem-Christo, redefined the landscape of electronic music with their innovative sound and visual presentation. Known for their anonymity and distinctive robot personas, Daft Punk's music is a blend of house, funk, disco, and synthpop, underpinned by a commitment to pushing the boundaries of music production and performance.
+
+Their debut album, "Homework," was a critical and commercial success, introducing their signature sound to the world. However, it was their sophomore album, "Discovery," that cemented their status as pioneers, with tracks like "One More Time" and "Harder, Better, Faster, Stronger" becoming anthems of the electronic music genre. Their ability to create music that is both accessible and artistically profound has earned them a diverse and dedicated fanbase.
+
+Daft Punk's influence extends beyond their studio albums; their live performances, particularly the 2006-2007 Alive tour, were groundbreaking in their use of visuals and stage design, setting new standards for live electronic music shows. Their work on the soundtrack for the film "Tron: Legacy" further showcased their versatility and creativity.
+
+In 2013, Daft Punk released "Random Access Memories," an homage to the music of the 1970s and 1980s, which won multiple Grammy Awards and featured collaborations with legends like Nile Rodgers and Giorgio Moroder. Despite announcing their split in 2021, Daft Punk's legacy as innovators and icons of electronic music remains undiminished. Their music continues to influence artists across genres, ensuring their place in the pantheon of musical legends.
+
+
+
+***
+Listen to Daft Punk here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2Foc5Q5nqNiosCNqttzHof?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### Analysis
+```{r daft_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(daft_punk_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(daft_punk_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+
+***
+
+Sidebar text
+
+# Fela Kuti {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+Fela Kuti, the Nigerian multi-instrumentalist, composer, and the pioneer of Afrobeat, left an indelible mark on the world of music and activism. Born in 1938, Kuti's musical journey was a fusion of traditional African rhythms, jazz, funk, and highlife, creating a vibrant, energetic sound that was entirely his own. His music was not just for dancing; it carried powerful messages of resistance against political corruption, social injustice, and colonial legacies in Africa.
+
+Kuti's band, Africa '70, was central to the Afrobeat sound, characterized by complex grooves, fiery horn sections, and percussive rhythms. Albums like "Zombie" and "Expensive Shit" were not only musical triumphs but also acts of political defiance, leading to frequent clashes with the Nigerian government and resulting in his imprisonment on several occasions.
+
+Beyond his musical achievements, Fela Kuti was a cultural icon and a political activist, whose outspokenness and charismatic leadership made him a hero to many in Nigeria and across the African continent. His commune, the Kalakuta Republic, was a hub for countercultural movements and a symbol of resistance.
+
+Despite his death in 1997, Kuti's legacy continues to thrive through his music, his sons Femi and Seun Kuti, who are prominent Afrobeat musicians in their own right, and the annual Felabration festival that celebrates his life and work. Fela Kuti remains an influential figure in music, recognized worldwide for his contributions to Afrobeat and his relentless fight for freedom and justice.
+
+***
+Listen to Fela Kuti here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/5CG9X521RDFWCuAhlo6QoR?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Fela Kuti look like?
+
+```{r}
+fela_kuti_corpus <- corpus %>%
+  filter(artist == "Fela Kuti")
+
+career_category_distribution <- ggplot(fela_kuti_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+***
+Sidebar text
+
+### Analysis
+```{r fela_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(fela_kuti_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(fela_kuti_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+
+***
+Sidebar text
+
+# Miles Davis {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+Miles Davis, an American jazz trumpeter, bandleader, and composer, was one of the most influential and innovative figures in the history of jazz music. Over a career spanning more than five decades, Davis was at the forefront of several major developments in jazz, from bebop and cool jazz to hard bop, modal jazz, and jazz fusion. His restless creativity led to a discography that is both diverse and groundbreaking, constantly challenging and reshaping the boundaries of jazz.
+
+Davis's 1959 album, "Kind of Blue," is a landmark in the genre, its modal jazz approach influencing generations of jazz musicians. Albums like "Bitches Brew" and "In a Silent Way" were pivotal in the development of jazz fusion, integrating electric instruments and rock and funk elements into jazz, and opening up new avenues for improvisation and composition in the genre.
+
+Davis was known not only for his musical genius but also for his ability to assemble and mentor talented musicians, many of whom went on to become major figures in jazz themselves. His bands were incubators of talent, pushing the envelope of what jazz could be.
+
+Despite facing challenges, including racial discrimination and struggles with addiction, Davis's contributions to music were immense. His work transcended jazz, influencing rock, funk, and electronic music, and his legacy is a testament to the power of innovation and the enduring appeal of jazz. Miles Davis remains a towering figure in music, celebrated for his artistic vision and his unparalleled contributions to the evolution of jazz.
+
+*** 
+Listen to Miles Davis here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0kbYTNQb4Pb1rPbbaF0pT4?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### How does the career of Miles Davis look like?
+```{r}
+miles_davis_corpus <- corpus %>%
+  filter(artist == "Miles Davis")
+
+career_category_distribution <- ggplot(miles_davis_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+***
+Sidebar
+
+### Analysis
+```{r miles_valence_energy, fig.width=10}
+ # Use the function to create plots
+valence_plot <- create_density_plot(miles_davis_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(miles_davis_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+
+***
+Sidebar text
+
+# Radiohead {.storyboard data-navmenu="Musical Journey"} 
+### About the artist
+Radiohead, the English rock band formed in Oxfordshire in 1985, has been a driving force in alternative rock with their complex music, innovative soundscapes, and introspective lyrics. Comprising Thom Yorke, Jonny Greenwood, Colin Greenwood, Ed O'Brien, and Philip Selway, Radiohead's journey from their grunge-influenced debut album "Pablo Honey" to their groundbreaking work on "OK Computer" and beyond, showcases their willingness to experiment and evolve.
+
+Known for their exploratory approach to music, Radiohead has delved into electronic, experimental rock, and classical music influences, creating a distinctive sound that defies easy categorization. Albums like "Kid A" and "In Rainbows" reflect their mastery of blending emotional depth with technical innovation, earning them critical acclaim and a devoted global following.
+
+Radiohead's lyrical themes often grapple with alienation, societal issues, and the human condition, resonating with fans and reflecting the band's engagement with the world around them. Their use of multimedia in live performances and their approach to the music industry, including pioneering pay-what-you-want models for album releases, underline their status as cultural innovators.
+
+Despite their success, Radiohead has remained enigmatic and resistant to mainstream conventions, prioritizing artistic integrity over commercial appeal. Their influence on alternative rock and contemporary music is profound, inspiring countless artists across genres. Radiohead continues to be celebrated for their innovative contributions to music and their ability to capture the complexity of modern life in their art.
+
+***
+Listen to Radiohead here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/4Z8W4fKeB5YxbusRsdQVPb?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+### How does the career of Radiohead look like?
+
+```{r}
+radiohead_corpus <- corpus %>%
+  filter(artist == "Radiohead")
+
+career_category_distribution <- ggplot(radiohead_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+***
+Sidebar text
+
+### Analysis
+```{r radiohead_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(radiohead_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(radiohead_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+
+***
+Sidebar text
+
+# RHCP {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+The Red Hot Chili Peppers, an American rock band formed in Los Angeles in 1983, are known for their energetic performances, distinctive fusion of funk, punk rock, and psychedelic rock, and the dynamic chemistry between band members. The band, consisting of Anthony Kiedis, Flea, John Frusciante, and Chad Smith, has navigated through numerous lineup changes while maintaining their unique sound and high-energy appeal.
+
+Their music, characterized by vibrant bass lines, melodic guitar riffs, and Kiedis's rap-like vocals, captures the essence of California's cultural melting pot. Albums like "Blood Sugar Sex Magik," "Californication," and "By the Way" are pivotal in their discography, showcasing their ability to blend raw energy with more introspective lyrics and complex compositions.
+
+The Red Hot Chili Peppers' journey is marked by both critical acclaim and personal struggles, including battles with addiction and the loss of former members. Their resilience and capacity for reinvention have kept them at the forefront of the rock scene for decades.
+
+The band's contributions go beyond music; they are known for their activism and philanthropy, using their platform to address issues such as environmental conservation and support for music education. With a career spanning over three decades, the Red Hot Chili Peppers continue to captivate audiences around the world, embodying the spirit of innovation and the enduring appeal of rock music.
+
+***
+Listen to Red Hot Chili Peppers here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0L8ExT028jH3ddEcZwqJJ5?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+### How does the career of Red Hot Chili Peppers look like?
+```{r}
+rhcp_corpus <- corpus %>%
+  filter(artist == "RHCP")
+
+career_category_distribution <- ggplot(rhcp_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+
+***
+Sidebar text
+### Analysis
+```{r rhcp_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(rhcp_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(rhcp_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+
+***
+Sidebar text
+
+# Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
+
+### About the artist
+Youssou N'Dour, the Senegalese singer, songwriter, and composer, has been a monumental figure in world music since the late 20th century. His powerful voice and innovative fusion of traditional Senegalese music with Cuban rumba, hip hop, jazz, and soul have earned him international acclaim and a dedicated fanbase across the globe. N'Dour's music is deeply rooted in the Mbalax rhythm, which is central to Senegalese culture, yet his approach is unmistakably global, reflecting his commitment to cultural exchange and mutual understanding.
+
+N'Dour's album "Immigrés" is widely regarded as a landmark in world music, introducing his captivating blend of West African rhythms and global musical influences to a wider audience. His collaboration with Peter Gabriel on the hit song "In Your Eyes" brought his powerful vocals to the attention of listeners worldwide, further solidifying his status as a musical ambassador.
+
+Beyond his musical achievements, N'Dour is a respected political activist and philanthropist, using his platform to advocate for issues such as health, education, and peace in Africa. He has served as a goodwill ambassador for the United Nations and even entered the political arena in Senegal, demonstrating his deep commitment to his country and its development.
+
+N'Dour's influence extends beyond his discography; he is a cultural icon in Senegal and an influential figure on the world stage. His work has bridged cultural divides, promoting a message of unity and understanding through the universal language of music. Youssou N'Dour remains a vital voice in world music, celebrated for his artistic excellence and his dedication to social and political causes.
+
+***
+Listen to Youssou N'Dour here:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/77zlytAFjPFjUKda8TNIDY?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+### How does the career of Youssou N'Dour look like?
+```{r}
+youssou_corpus <- corpus %>%
+  filter(artist == "Youssou N'Dour")
+
+career_category_distribution <- ggplot(youssou_corpus, aes(x = career_cat, fill = career_cat)) +
+    geom_bar() +
+    labs(y = "Count", fill = "Career Category") +
+    theme_minimal()
+
+ggplotly(career_category_distribution)
+```
+***
+Sidebar text
+### Analysis
+```{r youssou_valence_energy, fig.width=10}
+# Use the function to create plots
+valence_plot <- create_density_plot(youssou_corpus, "valence", "Density Plot by Career Category", "Valence")
+energy_plot <- create_density_plot(youssou_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+# Combine the plots
+plot_grid(valence_plot, energy_plot, ncol = 1)
+```
+
+***
+Sidebar text
+
+
+
 # Clustering (w12) {.storyboard data-navmenu=Homework}
 ### Histogram
 
 ```{r, include=FALSE}
-corpus_raw <- readRDS(file="data/corpus-data.RDS")
-beatles_corpus <- corpus_raw %>%
-  filter(artist == "Daft Punk")
+# corpus_raw <- readRDS(file="data/corpus-data.RDS")
+# beatles_corpus <- corpus_raw %>%
+#   filter(artist == "Daft Punk")
+# 
+# halloween <-
+#   # get_playlist_audio_features("bnfcollection", "1vsoLSK3ArkpaIHmUaF02C") |>
+#   beatles_corpus |>
+#   add_audio_analysis() |>
+#   mutate(
+#     segments = map2(segments, key, compmus_c_transpose),
+#     pitches =
+#       map(segments,
+#         compmus_summarise, pitches,
+#         method = "mean", norm = "manhattan"
+#       ),
+#     timbre =
+#       map(
+#         segments,
+#         compmus_summarise, timbre,
+#         method = "mean"
+#       )
+#   ) |>
+#   mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+#   mutate_at(vars(pitches, timbre), map, bind_rows) |>
+#   unnest(cols = c(pitches, timbre))
 
-halloween <-
-  get_playlist_audio_features("bnfcollection", "1vsoLSK3ArkpaIHmUaF02C") |>
-  # beatles_corpus |>
-  add_audio_analysis() |>
-  mutate(
-    segments = map2(segments, key, compmus_c_transpose),
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "mean", norm = "manhattan"
-      ),
-    timbre =
-      map(
-        segments,
-        compmus_summarise, timbre,
-        method = "mean"
-      )
-  ) |>
-  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
-  mutate_at(vars(pitches, timbre), map, bind_rows) |>
-  unnest(cols = c(pitches, timbre))
-
-
-```
-
-```{r}
-halloween_juice <-
-  recipe(
-    track.name ~
-      danceability +
-      energy +
-      loudness +
-      speechiness +
-      acousticness +
-      instrumentalness +
-      liveness +
-      valence +
-      tempo +
-      duration +
-      C + `C#|Db` + D + `D#|Eb` +
-      E + `F` + `F#|Gb` + G +
-      `G#|Ab` + A + `A#|Bb` + B +
-      c01 + c02 + c03 + c04 + c05 + c06 +
-      c07 + c08 + c09 + c10 + c11 + c12,
-    data = halloween
-  ) |>
-  step_center(all_predictors()) |>
-  step_scale(all_predictors()) |> 
-  prep(halloween |> mutate(track.name = str_trunc(track.name, 20))) |>
-  juice() |>
-  mutate(track.name = paste(track.name, row_number(), sep = "_")) |>
-  column_to_rownames("track.name")
-
-```
-```{r}
-halloween_dist <- dist(halloween_juice, method = "euclidean")
 
 ```
 
 ```{r}
-halloween_dist |> 
-  hclust(method = "average") |> # Try single, average, and complete.
-  dendro_data() |>
-  ggdendrogram()
+
+
+# halloween_juice <-
+#   recipe(
+#     track.name ~
+#       danceability +
+#       energy +
+#       loudness +
+#       speechiness +
+#       acousticness +
+#       instrumentalness +
+#       liveness +
+#       valence +
+#       tempo +
+#       duration +
+#       C + `C#|Db` + D + `D#|Eb` +
+#       E + `F` + `F#|Gb` + G +
+#       `G#|Ab` + A + `A#|Bb` + B +
+#       c01 + c02 + c03 + c04 + c05 + c06 +
+#       c07 + c08 + c09 + c10 + c11 + c12,
+#     data = halloween
+#   ) |>
+#   step_center(all_predictors()) |>
+#   step_scale(all_predictors()) |> 
+#   prep(halloween |> mutate(track.name = str_trunc(track.name, 20))) |>
+#   juice() |>
+#   mutate(track.name = paste(track.name, row_number(), sep = "_")) |>
+#   column_to_rownames("track.name")
+
+```
+
+```{r}
+# halloween_dist <- dist(halloween_juice, method = "euclidean")
+
+```
+
+```{r}
+# halloween_dist |> 
+#   hclust(method = "average") |> # Try single, average, and complete.
+#   dendro_data() |>
+#   ggdendrogram()
 ```
 
 ```{r, echo=FALSE, fig.height=6}
 
-print("hello")
+# print("hello")
 
 
 ```
@@ -795,579 +1421,4 @@ ggplotly(scattertje)
 ***
 
 In the scatterplot we see the albums as dots, colored per artist. On the x and y axis display the mean and standard deviation of tempo respectively. Because the standard deviation is calculated per album, it's generally quite high but also for most artists the same. For artist like Caetano Veloso, Fela Kuti and Miles Davis we see their albums spread out over both axes. For other artists we see their albums are more clustered together.
-
-
-# Introduction {.storyboard data-navmenu=Introduction}
-### Introduction  
-```{r intro_overview, echo=FALSE}
-
-
-```
-
-On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
-
-This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
-
-The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
-
-The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
-
-### Artist overview
-
-```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
-# Create a ggplot object
-p <- ggplot(corpus_by_artist, aes(x = reorder(artist, track_count), y = track_count)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  labs(x = "Artist Name", y = "Catalog Size", title = "Catalog Size of Artists") +
-  coord_flip() # Flipping coordinates for better readability
-
-
-
-
-boxplot <- ggplot(corpus, aes(x = artist, y = track_duration_minutes)) +
-              geom_boxplot() +
-              theme_minimal() +
-              labs(x = "Artist", y = "Track Length (minutes)", title = "Track Length Distribution Across Artists") +
-              theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate artist names for readability
-
-plot_grid(p, boxplot,
-          nrow= 2)
-```
-
-***
-Here comes a sidebar
-
-### Which artist makes the most happy and energetic songs?
-
-```{r explorative_plot, echo=FALSE}
-# Step 1: Identify the points
-album_corpus <- album_corpus %>%
-  mutate(combination = energy_mean + valence_mean) %>%
-  arrange(combination) %>%
-  mutate(label_position = case_when(
-    row_number() == 1 ~ "Lowest",
-    row_number() == n() ~ "Highest",
-    TRUE ~ NA_character_
-  ))
-
-# Prepare the label text
-album_corpus$label_text <- ifelse(
-  !is.na(album_corpus$label_position),
-  paste(album_corpus$artist, album_corpus$track.album.name, sep = ", "),
-  NA
-)
-
-# Step 2: Plot with annotations
-explorative_plot <- ggplot(album_corpus, aes(x = energy_mean, y = valence_mean, color = artist)) +
-    geom_point(aes(alpha = 0.4, size = danceability_mean)) +
-    geom_text(data = filter(album_corpus, !is.na(label_text)), 
-                aes(label = label_text), 
-                nudge_x = 0.03, nudge_y = 0.01,  # Adjust label location
-                check_overlap = TRUE, 
-                size = 2) +  # Adjust label size
-    labs(title = "Energy vs. valence colored by Artist with danceability Size",
-         x = "Energy",
-         y = "Valence",
-         color = "Artist",
-         size = "Danceability",
-         alpha = "Alpha") +
-    theme_minimal() +
-    guides(size = guide_legend(title = "Valence")) +
-    theme(legend.text = element_text(size = 12),  # Increase legend text size
-          legend.key.size = unit(1, "lines"))  # Increase legend key size
-
-ggplotly(explorative_plot)
-
-```
-
-***
-
-The plot included in this repository displays the distribution of track descriptives (energy, danceability and valence) of the selected corpus, grouped by albums where artists are displayed with color. All the data is extracted with the Spotify API by combining self constructed playlists. Each playlist contained all the studio album recordings of an artist, live recordings were ignored in this dataset.
-
-Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
-
-### Detailed artist overview
-
-```{r overview, echo=FALSE}
-# Static plot code here
-# Now, use 'track_info' in the 'text' aesthetic for tooltips
-track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = track.album.name, text = track_info, alpha = 0.8)) +
-  geom_point() +
-  facet_wrap(~artist) +
-  labs(title = "Valence vs Energy colored by danceability per artist") + # Title for the color scale
-  theme_minimal() +
-  guides(alpha = none) + # Optionally, remove the alpha guide if not needed
-  theme(legend.text = element_text(size = 12),  # Increase legend text size
-        legend.key.size = unit(1, "lines"),  # Increase legend key size
-        legend.position = "none")  # Remove the legend
-
-# Convert to plotly object with tooltips
-track_plotly <- ggplotly(track_plot, tooltip = "text")
-
-# Print the plotly plot
-track_plotly
-
-
-
-```
-
-***
-
-Sidebar text
-
-# How much do artists adhere to their albums? {.storyboard data-navmenu=Introduction}
-### This will be a page
-```{r}
-1+1
-```
-
-
-***
-
-Clustering algorithms?
-
-# Artists {.storyboard data-navmenu="Musical Journey"}
-### About page
-
-
-
-### Methodology
-```{r career_cat_distribution_plot, echo=FALSE, fig.width=10, fig.height=6}
-  
-career_category_distribution <- ggplot(album_corpus_analysis, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    facet_wrap(~artist, scales = "free_y") +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-
-***
-
-Sidebar
-
-### Music
-```{r}
-1+1
-```
-
-
-# Beatles {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-The Beatles, an English rock band formed in Liverpool in 1960, revolutionized the music industry and became a cultural phenomenon. Comprising John Lennon, Paul McCartney, George Harrison, and Ringo Starr, their musical journey is marked by an unparalleled legacy of innovation and diversity. Initially influenced by rock and roll and skiffle, their early hits were characterized by youthful energy and catchy melodies. As their career progressed, they ventured into a variety of genres, from folk, blues, and Indian music to psychedelia and hard rock, showcasing their versatility and pioneering spirit.
-
-Their albums, such as "Sgt. Pepper's Lonely Hearts Club Band," "Revolver," and "The White Album," are landmarks in the evolution of pop music, noted for their creative experimentation, sophisticated use of technology, and lyrical depth. The Beatles' impact extended beyond music; they influenced the social and cultural revolutions of the 1960s, challenging conventions and inspiring a generation.
-
-Despite disbanding in 1970, The Beatles' music remains timeless, continuing to inspire musicians and delight fans across generations. Their innovative recording techniques, songwriting skills, and profound influence on the music industry have cemented their status as one of the greatest and most important bands in history.
-
-***
-Listen here to the Beatles:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/3WrFJ7ztbogyGnTHbHJFl2?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-### How does the career of the Beatles look like?
-```{r, echo=FALSE}
-beatles_corpus <- corpus %>%
-  filter(artist == "Beatles")
-
-career_category_distribution <- ggplot(beatles_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-***
-Sidebar text
-
-### Analysis
-```{r beatles_valence_energy, echo=FALSE, fig.width=10}
-
-# valence <- ggplot(beatles_corpus, aes(x = valence, fill = career_cat)) +
-#   geom_density(alpha = 0.5) + 
-#   labs(title = "Density Plot by Career Category", x = "Valence",
-#        fill = "Career Category") +
-#   theme_minimal() +
-#   scale_fill_brewer(palette = "Set1")
-# 
-# energy <- ggplot(beatles_corpus, aes(x = energy, fill = career_cat)) +
-#   geom_density(alpha = 0.5) + 
-#   labs(title = "Density Plot by Career Category", x = "Energy",
-#        fill = "Career Category") +
-#   theme_minimal() +
-#   scale_fill_brewer(palette = "Set1")
-
-valence_plot <- create_density_plot(beatles_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(beatles_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-
-
-```
-
-```{r}
-scatterPlot <- ggplot(beatles_corpus, aes(x = valence, y = energy, color = career_cat)) +
-    geom_jitter(alpha = 1) +
-    labs(title = "Scatter Plot by Career Category", x = "Valence", y = "Energy",
-         color = "Career Category") +
-    theme_minimal()
-ggplotly(scatterPlot)
-
-```
-***
-
-sidebar text
-
-# Björk {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-Björk, the Icelandic singer-songwriter and producer, has carved a unique path in the music industry with her avant-garde approach to music and multimedia art. Since her debut album in 1977, Björk's career has been a journey of constant evolution, blending electronic, classical, pop, and experimental music with an innovative flair that is distinctly her own. Her ethereal voice and eclectic style have garnered critical acclaim and a devoted global fanbase.
-
-Her work is characterized by a fearless exploration of new sounds and technologies, often incorporating elements of nature, technology, and personal emotion into a cohesive artistic vision. Albums like "Debut," "Post," and "Homogenic" showcase her ability to merge electronic music with heartfelt lyricism, while later works such as "Biophilia" and "Vulnicura" delve into more conceptual themes, reflecting her ongoing commitment to pushing musical boundaries.
-
-Björk's contributions to music are not limited to her albums; she has also been involved in film, multimedia projects, and activism, further highlighting her multifaceted talent and deep connection to her Icelandic roots. Her innovative use of visuals, including groundbreaking music videos and stage performances, has redefined the possibilities of the music album as an art form. Björk remains an influential figure in contemporary music, celebrated for her originality, artistic integrity, and the emotional depth of her work.
-
-
-***
-Listen to Björk:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7w29UYBi0qsHi5RTcv3lmA?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-### How does the career of Björk look like?
-```{r, echo=FALSE}
-bjork_corpus <- corpus %>%
-  filter(artist == "Bjork")
-
-career_category_distribution <- ggplot(bjork_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-
-
-### Analysis
-```{r bjork_valence_energy, fig.width=10}
-valence_plot <- create_density_plot(beatles_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(beatles_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-```
-
-***
-
-Sidebar text
-
-# Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
-### About the artist
-Caetano Veloso, a cornerstone of Brazilian music, has been a pivotal figure in the Tropicália movement, blending traditional Brazilian sounds with global musical influences. Since the late 1960s, Veloso has been crafting songs that weave together samba, bossa nova, rock, and folk, among other genres, making him a symbol of cultural fusion and innovation. His music not only delights the ear but also engages the mind, often addressing themes of political resistance, social justice, and personal identity.
-
-Veloso's early work was marked by his opposition to Brazil's military dictatorship, leading to his arrest and forced exile in the late 1960s. This period of hardship only fueled his creativity, resulting in poignant albums that reflected his experiences and insights. Upon his return to Brazil, Veloso continued to explore and innovate, becoming an influential figure in the MPB (Música Popular Brasileira) genre.
-
-His discography is vast and varied, with albums like "Transa," "Estrangeiro," and "Livro" showcasing his skill as a composer and his ability to cross cultural and musical borders. Veloso's impact extends beyond his music; he is a respected intellectual and has been a powerful voice for LGBTQ+ rights and environmental activism in Brazil.
-
-Now in the fifth decade of his career, Caetano Veloso remains a vibrant and relevant artist, revered for his lyrical genius, musical versatility, and commitment to social causes. His work continues to inspire new generations of musicians and activists alike, solidifying his legacy as a master of Brazilian music and a champion for human rights.
-
-***
-Listen to Caetano Veloso here:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7HGNYPmbDrMkylWqeFCOIQ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-### How does the career of Caetano Veloso look like?
-```{r}
-caetano_veloso_corpus <- corpus %>%
-  filter(artist == "Caetano Veloso")
-
-career_category_distribution <- ggplot(caetano_veloso_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-### Analysis
-```{r caetano_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(caetano_veloso_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(caetano_veloso_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-
-```
-***
-Sidebar text
-
-# Daft Punk {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-```{r, include=FALSE}
-daft_punk_corpus <- corpus %>%
-  filter(artist == "Daft Punk")
-
-career_category_distribution <- ggplot(daft_punk_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-Daft Punk, the French electronic music duo formed in 1993 by Thomas Bangalter and Guy-Manuel de Homem-Christo, redefined the landscape of electronic music with their innovative sound and visual presentation. Known for their anonymity and distinctive robot personas, Daft Punk's music is a blend of house, funk, disco, and synthpop, underpinned by a commitment to pushing the boundaries of music production and performance.
-
-Their debut album, "Homework," was a critical and commercial success, introducing their signature sound to the world. However, it was their sophomore album, "Discovery," that cemented their status as pioneers, with tracks like "One More Time" and "Harder, Better, Faster, Stronger" becoming anthems of the electronic music genre. Their ability to create music that is both accessible and artistically profound has earned them a diverse and dedicated fanbase.
-
-Daft Punk's influence extends beyond their studio albums; their live performances, particularly the 2006-2007 Alive tour, were groundbreaking in their use of visuals and stage design, setting new standards for live electronic music shows. Their work on the soundtrack for the film "Tron: Legacy" further showcased their versatility and creativity.
-
-In 2013, Daft Punk released "Random Access Memories," an homage to the music of the 1970s and 1980s, which won multiple Grammy Awards and featured collaborations with legends like Nile Rodgers and Giorgio Moroder. Despite announcing their split in 2021, Daft Punk's legacy as innovators and icons of electronic music remains undiminished. Their music continues to influence artists across genres, ensuring their place in the pantheon of musical legends.
-
-
-
-***
-Listen to Daft Punk here:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2Foc5Q5nqNiosCNqttzHof?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-### Analysis
-```{r daft_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(daft_punk_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(daft_punk_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-```
-
-***
-
-Sidebar text
-
-# Fela Kuti {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-Fela Kuti, the Nigerian multi-instrumentalist, composer, and the pioneer of Afrobeat, left an indelible mark on the world of music and activism. Born in 1938, Kuti's musical journey was a fusion of traditional African rhythms, jazz, funk, and highlife, creating a vibrant, energetic sound that was entirely his own. His music was not just for dancing; it carried powerful messages of resistance against political corruption, social injustice, and colonial legacies in Africa.
-
-Kuti's band, Africa '70, was central to the Afrobeat sound, characterized by complex grooves, fiery horn sections, and percussive rhythms. Albums like "Zombie" and "Expensive Shit" were not only musical triumphs but also acts of political defiance, leading to frequent clashes with the Nigerian government and resulting in his imprisonment on several occasions.
-
-Beyond his musical achievements, Fela Kuti was a cultural icon and a political activist, whose outspokenness and charismatic leadership made him a hero to many in Nigeria and across the African continent. His commune, the Kalakuta Republic, was a hub for countercultural movements and a symbol of resistance.
-
-Despite his death in 1997, Kuti's legacy continues to thrive through his music, his sons Femi and Seun Kuti, who are prominent Afrobeat musicians in their own right, and the annual Felabration festival that celebrates his life and work. Fela Kuti remains an influential figure in music, recognized worldwide for his contributions to Afrobeat and his relentless fight for freedom and justice.
-
-***
-Listen to Fela Kuti here:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/5CG9X521RDFWCuAhlo6QoR?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-### How does the career of Fela Kuti look like?
-
-```{r}
-fela_kuti_corpus <- corpus %>%
-  filter(artist == "Fela Kuti")
-
-career_category_distribution <- ggplot(fela_kuti_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-***
-Sidebar text
-
-### Analysis
-```{r fela_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(fela_kuti_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(fela_kuti_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-```
-
-***
-Sidebar text
-
-# Miles Davis {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-Miles Davis, an American jazz trumpeter, bandleader, and composer, was one of the most influential and innovative figures in the history of jazz music. Over a career spanning more than five decades, Davis was at the forefront of several major developments in jazz, from bebop and cool jazz to hard bop, modal jazz, and jazz fusion. His restless creativity led to a discography that is both diverse and groundbreaking, constantly challenging and reshaping the boundaries of jazz.
-
-Davis's 1959 album, "Kind of Blue," is a landmark in the genre, its modal jazz approach influencing generations of jazz musicians. Albums like "Bitches Brew" and "In a Silent Way" were pivotal in the development of jazz fusion, integrating electric instruments and rock and funk elements into jazz, and opening up new avenues for improvisation and composition in the genre.
-
-Davis was known not only for his musical genius but also for his ability to assemble and mentor talented musicians, many of whom went on to become major figures in jazz themselves. His bands were incubators of talent, pushing the envelope of what jazz could be.
-
-Despite facing challenges, including racial discrimination and struggles with addiction, Davis's contributions to music were immense. His work transcended jazz, influencing rock, funk, and electronic music, and his legacy is a testament to the power of innovation and the enduring appeal of jazz. Miles Davis remains a towering figure in music, celebrated for his artistic vision and his unparalleled contributions to the evolution of jazz.
-
-*** 
-Listen to Miles Davis here:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0kbYTNQb4Pb1rPbbaF0pT4?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-### How does the career of Miles Davis look like?
-```{r}
-miles_davis_corpus <- corpus %>%
-  filter(artist == "Miles Davis")
-
-career_category_distribution <- ggplot(miles_davis_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-***
-Sidebar
-
-### Analysis
-```{r miles_valence_energy, fig.width=10}
- # Use the function to create plots
-valence_plot <- create_density_plot(miles_davis_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(miles_davis_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-```
-
-***
-Sidebar text
-
-# Radiohead {.storyboard data-navmenu="Musical Journey"} 
-### About the artist
-Radiohead, the English rock band formed in Oxfordshire in 1985, has been a driving force in alternative rock with their complex music, innovative soundscapes, and introspective lyrics. Comprising Thom Yorke, Jonny Greenwood, Colin Greenwood, Ed O'Brien, and Philip Selway, Radiohead's journey from their grunge-influenced debut album "Pablo Honey" to their groundbreaking work on "OK Computer" and beyond, showcases their willingness to experiment and evolve.
-
-Known for their exploratory approach to music, Radiohead has delved into electronic, experimental rock, and classical music influences, creating a distinctive sound that defies easy categorization. Albums like "Kid A" and "In Rainbows" reflect their mastery of blending emotional depth with technical innovation, earning them critical acclaim and a devoted global following.
-
-Radiohead's lyrical themes often grapple with alienation, societal issues, and the human condition, resonating with fans and reflecting the band's engagement with the world around them. Their use of multimedia in live performances and their approach to the music industry, including pioneering pay-what-you-want models for album releases, underline their status as cultural innovators.
-
-Despite their success, Radiohead has remained enigmatic and resistant to mainstream conventions, prioritizing artistic integrity over commercial appeal. Their influence on alternative rock and contemporary music is profound, inspiring countless artists across genres. Radiohead continues to be celebrated for their innovative contributions to music and their ability to capture the complexity of modern life in their art.
-
-***
-Listen to Radiohead here:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/4Z8W4fKeB5YxbusRsdQVPb?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-### How does the career of Radiohead look like?
-
-```{r}
-radiohead_corpus <- corpus %>%
-  filter(artist == "Radiohead")
-
-career_category_distribution <- ggplot(radiohead_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-***
-Sidebar text
-
-### Analysis
-```{r radiohead_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(radiohead_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(radiohead_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-```
-
-***
-Sidebar text
-
-# RHCP {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-The Red Hot Chili Peppers, an American rock band formed in Los Angeles in 1983, are known for their energetic performances, distinctive fusion of funk, punk rock, and psychedelic rock, and the dynamic chemistry between band members. The band, consisting of Anthony Kiedis, Flea, John Frusciante, and Chad Smith, has navigated through numerous lineup changes while maintaining their unique sound and high-energy appeal.
-
-Their music, characterized by vibrant bass lines, melodic guitar riffs, and Kiedis's rap-like vocals, captures the essence of California's cultural melting pot. Albums like "Blood Sugar Sex Magik," "Californication," and "By the Way" are pivotal in their discography, showcasing their ability to blend raw energy with more introspective lyrics and complex compositions.
-
-The Red Hot Chili Peppers' journey is marked by both critical acclaim and personal struggles, including battles with addiction and the loss of former members. Their resilience and capacity for reinvention have kept them at the forefront of the rock scene for decades.
-
-The band's contributions go beyond music; they are known for their activism and philanthropy, using their platform to address issues such as environmental conservation and support for music education. With a career spanning over three decades, the Red Hot Chili Peppers continue to captivate audiences around the world, embodying the spirit of innovation and the enduring appeal of rock music.
-
-***
-Listen to Red Hot Chili Peppers here:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0L8ExT028jH3ddEcZwqJJ5?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-### How does the career of Red Hot Chili Peppers look like?
-```{r}
-rhcp_corpus <- corpus %>%
-  filter(artist == "RHCP")
-
-career_category_distribution <- ggplot(rhcp_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-
-***
-Sidebar text
-### Analysis
-```{r rhcp_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(rhcp_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(rhcp_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-```
-
-***
-Sidebar text
-
-# Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
-
-### About the artist
-Youssou N'Dour, the Senegalese singer, songwriter, and composer, has been a monumental figure in world music since the late 20th century. His powerful voice and innovative fusion of traditional Senegalese music with Cuban rumba, hip hop, jazz, and soul have earned him international acclaim and a dedicated fanbase across the globe. N'Dour's music is deeply rooted in the Mbalax rhythm, which is central to Senegalese culture, yet his approach is unmistakably global, reflecting his commitment to cultural exchange and mutual understanding.
-
-N'Dour's album "Immigrés" is widely regarded as a landmark in world music, introducing his captivating blend of West African rhythms and global musical influences to a wider audience. His collaboration with Peter Gabriel on the hit song "In Your Eyes" brought his powerful vocals to the attention of listeners worldwide, further solidifying his status as a musical ambassador.
-
-Beyond his musical achievements, N'Dour is a respected political activist and philanthropist, using his platform to advocate for issues such as health, education, and peace in Africa. He has served as a goodwill ambassador for the United Nations and even entered the political arena in Senegal, demonstrating his deep commitment to his country and its development.
-
-N'Dour's influence extends beyond his discography; he is a cultural icon in Senegal and an influential figure on the world stage. His work has bridged cultural divides, promoting a message of unity and understanding through the universal language of music. Youssou N'Dour remains a vital voice in world music, celebrated for his artistic excellence and his dedication to social and political causes.
-
-***
-Listen to Youssou N'Dour here:
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/77zlytAFjPFjUKda8TNIDY?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-### How does the career of Youssou N'Dour look like?
-```{r}
-youssou_corpus <- corpus %>%
-  filter(artist == "Youssou N'Dour")
-
-career_category_distribution <- ggplot(youssou_corpus, aes(x = career_cat, fill = career_cat)) +
-    geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
-    theme_minimal()
-
-ggplotly(career_category_distribution)
-```
-***
-Sidebar text
-### Analysis
-```{r youssou_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(youssou_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(youssou_corpus, "energy", "Density Plot by Career Category", "Energy")
-
-# Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-```
-
-***
-Sidebar text
 

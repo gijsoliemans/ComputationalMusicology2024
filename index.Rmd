@@ -425,8 +425,6 @@ For instance, Radiohead's "Everything in Its Right Place" from the album "Kid A"
 
 Similarly, Björk's work ranges from the slower, haunting melodies of "Jóga" from "Homogenic" to the brisk, energetic beats of "Big Time Sensuality" from "Debut." Her use of tempo is often closely tied to the emotional or thematic content of her music, employing it as another layer of expression within her diverse soundscapes.
 
-While the specific tempos of their songs might occasionally align, it's essential to note that tempo is just one aspect of their music. The overall feel and impact of a song also depend on other elements like rhythm, melody, instrumentation, and production techniques, areas where their individual styles and preferences become more pronounced.
-
 In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
 
 # Methodology {.storyboard data-navmenu="Musical Journey"}
@@ -890,7 +888,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Sidebar text
+Fela Kuti's valence and energy scores are very consistant throughout his whole career. This could also be because of the small size of songs created in his Growth, Late and Mature years. 
 
 ### How have tempo and track duration changed?
 ```{r fela_tempo_duration, fig.width=10}
@@ -903,7 +901,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
-Sidebar text
+For both tempo and track duration Fela Kuti doesn't seem to have a concise change per career category. This could also be because of the small size of songs created in his Growth, Late and Mature years. 
 
 ### A key career change?
 ```{r}
@@ -914,6 +912,9 @@ interactive_plot
 
 ***
 Sidebar text
+
+***
+Remarkable to the key distribution per career category is the use of the key of G for songs of Fela Kuti's early, growth and matures years. 
 
 # Miles Davis {.storyboard data-navmenu="Musical Journey"}
 
@@ -971,7 +972,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Sidebar
+Songs of Miles Davis have risen in both energy and valence throughout the years of Davis's career. Fitting with his style of playing in his early years which were songs of low energy.
 
 ### How have tempo and track duration changed?
 ```{r miles_tempo_duration, fig.width=10}
@@ -983,7 +984,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
-Sidebar text
+While tempo and track duration are very wide distributed, they've remained roughly the same throughout Davis's career.
 
 ### A key career change?
 ```{r miles_keys, echo=FALSE}
@@ -992,7 +993,7 @@ interactive_plot
 ```
 
 ***
-Sidebar
+Throughout his whoel
 
 
 # Radiohead {.storyboard data-navmenu="Musical Journey"} 

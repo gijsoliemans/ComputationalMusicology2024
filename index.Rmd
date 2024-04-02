@@ -394,7 +394,7 @@ Despite disbanding in 1970, The Beatles' music remains timeless, continuing to i
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/3WrFJ7ztbogyGnTHbHJFl2?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of the Beatles look like?
+### Have  the Beatles changed their energy and valence within their songs? 
 ```{r beatles_career, echo=FALSE}
 
 
@@ -427,40 +427,26 @@ ggplotly(grouped_bar_chart)
 ***
 Sidebar text
 
-### Analysis
-```{r beatles_valence_energy, echo=FALSE, fig.width=10}
+### How have tempo and track duration changed?
+```{r beatles_tempo_duration, echo=FALSE, fig.width=10}
 
-# valence <- ggplot(beatles_corpus, aes(x = valence, fill = career_cat)) +
-#   geom_density(alpha = 0.5) + 
-#   labs(title = "Density Plot by Career Category", x = "Valence",
-#        fill = "Career Category") +
-#   theme_minimal() +
-#   scale_fill_brewer(palette = "Set1")
-# 
-# energy <- ggplot(beatles_corpus, aes(x = energy, fill = career_cat)) +
-#   geom_density(alpha = 0.5) + 
-#   labs(title = "Density Plot by Career Category", x = "Energy",
-#        fill = "Career Category") +
-#   theme_minimal() +
-#   scale_fill_brewer(palette = "Set1")
 
-valence_plot <- create_density_plot(beatles_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(beatles_corpus, "energy", "Density Plot by Career Category", "Energy")
+tempo_plot <- create_density_plot(beatles_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(beatles_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
-
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ```
 
-```{r}
+```{r, include = FALSE}
 
-scatterPlot <- ggplot(beatles_corpus, aes(x = valence, y = energy, color = career_cat)) +
-    geom_jitter(alpha = 1) +
-    labs(title = "Scatter Plot by Career Category", x = "Valence", y = "Energy",
-         color = "Career Category") +
-    theme_minimal()
-ggplotly(scatterPlot)
+# scatterPlot <- ggplot(beatles_corpus, aes(x = valence, y = energy, color = career_cat)) +
+#     geom_jitter(alpha = 1) +
+#     labs(title = "Scatter Plot by Career Category", x = "Valence", y = "Energy",
+#          color = "Career Category") +
+#     theme_minimal()
+# ggplotly(scatterPlot)
 
 ```
 ***
@@ -492,7 +478,7 @@ Björk's contributions to music are not limited to her albums; she has also been
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7w29UYBi0qsHi5RTcv3lmA?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Björk look like?
+### Has  Björk changed their energy and valence within their songs? 
 ```{r bjork_career, echo=FALSE}
 
 mean_energy <- bjork_corpus %>%
@@ -523,13 +509,13 @@ ggplotly(grouped_bar_chart)
 ***
 Sidebar text
 
-### Analysis
-```{r bjork_valence_energy, fig.width=10}
-valence_plot <- create_density_plot(bjork_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(bjork_corpus, "energy", "Density Plot by Career Category", "Energy")
+### How have tempo and track duration changed?
+```{r bjork_tempo_duration, fig.width=10}
+tempo_plot <- create_density_plot(bjork_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(bjork_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
@@ -563,7 +549,7 @@ Now in the fifth decade of his career, Caetano Veloso remains a vibrant and rele
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/7HGNYPmbDrMkylWqeFCOIQ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Caetano Veloso look like?
+### Has  Caetano Veloso changed their energy and valence within their songs? 
 ```{r}
 
 mean_energy <- caetano_veloso_corpus %>%
@@ -592,14 +578,14 @@ ggplotly(grouped_bar_chart)
 
 ```
 
-### Analysis
-```{r caetano_valence_energy, fig.width=10}
+### How have tempo and track duration changed?
+```{r caetano_tempo_duration, fig.width=10}
 # Use the function to create plots
-valence_plot <- create_density_plot(caetano_veloso_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(caetano_veloso_corpus, "energy", "Density Plot by Career Category", "Energy")
+tempo_plot <- create_density_plot(caetano_veloso_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(caetano_veloso_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ```
 ***
@@ -631,7 +617,7 @@ In 2013, Daft Punk released "Random Access Memories," an homage to the music of 
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2Foc5Q5nqNiosCNqttzHof?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Daft Punk look like?
+### Has  Daft Punk changed their energy and valence within their songs? 
 ```{r career_daft, echo=FALSE}
 
 mean_energy <- daft_punk_corpus %>%
@@ -662,14 +648,15 @@ ggplotly(grouped_bar_chart)
 ***
 Sidebar text
 
-### Analysis
-```{r daft_valence_energy, fig.width=10}
+### How have tempo and track duration changed?
+```{r daft_tempo_duration, fig.width=10}
 # Use the function to create plots
-valence_plot <- create_density_plot(daft_punk_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(daft_punk_corpus, "energy", "Density Plot by Career Category", "Energy")
+
+tempo_plot <- create_density_plot(daft_punk_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(daft_punk_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
@@ -705,7 +692,7 @@ Despite his death in 1997, Kuti's legacy continues to thrive through his music, 
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/5CG9X521RDFWCuAhlo6QoR?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Fela Kuti look like?
+### Has  Fela Kuti changed their energy and valence within their songs? 
 
 ```{r fela_career, echo=FALSE}
 
@@ -737,14 +724,14 @@ ggplotly(grouped_bar_chart)
 ***
 Sidebar text
 
-### Analysis
-```{r fela_valence_energy, fig.width=10}
+### How have tempo and track duration changed?
+```{r fela_tempo_duration, fig.width=10}
 # Use the function to create plots
-valence_plot <- create_density_plot(fela_kuti_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(fela_kuti_corpus, "energy", "Density Plot by Career Category", "Energy")
+tempo_plot <- create_density_plot(fela_kuti_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(fela_kuti_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
@@ -777,7 +764,7 @@ Despite facing challenges, including racial discrimination and struggles with ad
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0kbYTNQb4Pb1rPbbaF0pT4?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Miles Davis look like?
+### Has  Miles Davis changed their energy and valence within their songs? 
 ```{r miles_career, echo=FALSE}
 
 mean_energy <- miles_davis_corpus %>%
@@ -808,14 +795,13 @@ ggplotly(grouped_bar_chart)
 ***
 Sidebar
 
-### Analysis
-```{r miles_valence_energy, fig.width=10}
- # Use the function to create plots
-valence_plot <- create_density_plot(miles_davis_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(miles_davis_corpus, "energy", "Density Plot by Career Category", "Energy")
+### How have tempo and track duration changed?
+```{r miles_tempo_duration, fig.width=10}
+tempo_plot <- create_density_plot(miles_davis_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(miles_davis_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
@@ -847,7 +833,7 @@ Despite their success, Radiohead has remained enigmatic and resistant to mainstr
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/4Z8W4fKeB5YxbusRsdQVPb?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Radiohead look like?
+### Has  Radiohead changed their energy and valence within their songs? 
 
 ```{r radiohead_career, echo=FALSE}
 
@@ -879,14 +865,13 @@ ggplotly(grouped_bar_chart)
 ***
 Sidebar text
 
-### Analysis
-```{r radiohead_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(radiohead_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(radiohead_corpus, "energy", "Density Plot by Career Category", "Energy")
+### How have tempo and track duration changed?
+```{r radiohead_tempo_duration, fig.width=10}
+tempo_plot <- create_density_plot(radiohead_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(radiohead_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
@@ -919,7 +904,7 @@ The band's contributions go beyond music; they are known for their activism and 
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/0L8ExT028jH3ddEcZwqJJ5?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Red Hot Chili Peppers look like?
+### Has  Red Hot Chili Peppers changed their energy and valence within their songs? 
 ```{r rhcp_career, echo=FALSE}
 
 
@@ -951,14 +936,13 @@ ggplotly(grouped_bar_chart)
 
 ***
 Sidebar text
-### Analysis
-```{r rhcp_valence_energy, fig.width=10}
-# Use the function to create plots
-valence_plot <- create_density_plot(rhcp_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(rhcp_corpus, "energy", "Density Plot by Career Category", "Energy")
+### How have tempo and track duration changed?
+```{r rhcp_tempo_duration, fig.width=10}
+tempo_plot <- create_density_plot(rhcp_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(rhcp_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
@@ -991,7 +975,7 @@ N'Dour's influence extends beyond his discography; he is a cultural icon in Sene
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/77zlytAFjPFjUKda8TNIDY?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-### How does the career of Youssou N'Dour look like?
+### Has  Youssou N'Dour changed their energy and valence within their songs? 
 ```{r youssou_career, echo=FALSE}
 
 mean_energy <- youssou_corpus %>%
@@ -1022,14 +1006,14 @@ ggplotly(grouped_bar_chart)
 ```
 ***
 Sidebar text
-### Analysis
-```{r youssou_valence_energy, fig.width=10}
+### How have tempo and track duration changed?
+```{r youssou_tempo_duration, fig.width=10}
 # Use the function to create plots
-valence_plot <- create_density_plot(youssou_corpus, "valence", "Density Plot by Career Category", "Valence")
-energy_plot <- create_density_plot(youssou_corpus, "energy", "Density Plot by Career Category", "Energy")
+tempo_plot <- create_density_plot(youssou_corpus, "tempo", "Density Plot by Career Category", "Tempo")
+duration_plot <- create_density_plot(youssou_corpus, "track_duration_minutes", "Density Plot by Career Category", "Track duration")
 
 # Combine the plots
-plot_grid(valence_plot, energy_plot, ncol = 1)
+plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
@@ -1044,7 +1028,9 @@ Sidebar text
 artist_album_corpus <- corpus %>%
   group_by(artist, track.album.name, career_cat) %>%
   summarise(mean_energy = mean(energy, na.rm = TRUE),
-            mean_valence = mean(valence, na.rm = TRUE))
+            mean_valence = mean(valence, na.rm = TRUE),
+            mean_track_duration = mean(track_duration_minutes, na.rm = TRUE),
+            mean_tempo = mean(tempo, na.rm = TRUE))
 
 artist_album_corpus_long <- artist_album_corpus %>%
   pivot_longer(cols = c(mean_energy, mean_valence), names_to = "Metric", values_to = "Value")
@@ -1065,7 +1051,27 @@ ggplotly(facet_wrapped_valence_energy)
 ```
 
 ***
-Sidebar text
+Sidebar
+
+### Musical Journey Conclusions v2
+```{r tempo_duration, echo=FALSE}
+
+
+facet_wrapped_tempo_duration <- ggplot(artist_album_corpus, aes(x = career_cat, y = mean_tempo, size = mean_track_duration )) +
+  geom_line() + # or geom_point() if you prefer dots over lines
+  geom_point() +
+  facet_wrap(~ artist, scales = "free_x") + # Adjust ncol as needed for layout
+  labs(title = "Mean Valence and Mean Energy per Career Category by Artist",
+       x = "Career Category",
+       y = "Mean Value",
+       color = "Metric") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Improve x-axis label readability
+
+ggplotly(facet_wrapped_tempo_duration)
+
+```
+
 
 # Clustering (w12) {.storyboard data-navmenu=Homework}
 ### Histogram
@@ -1205,9 +1211,9 @@ While the specific tempos of their songs might occasionally align, it's essentia
 
 In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
 
-# How do two outliers of my corpus look like? (w9){.storyboard data-navmenu=Homework} 
+# How do two outliers of my corpus changed their energy and valence within their songs?  (w9){.storyboard data-navmenu=Homework} 
 
-### How do the chroma features look like?
+### How do the chroma features changed their energy and valence within their songs? 
 ```{r data_setup, include=FALSE}
 # Extracting track.id for Lowest combination
 lowest_track_id <- corpus_arranged %>%

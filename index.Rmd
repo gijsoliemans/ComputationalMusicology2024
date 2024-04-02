@@ -585,7 +585,7 @@ interactive_plot
 ```
 
 ***
-During all parts of their career the Beatles seem to maintain the use of the same keys in their songs. It's only the "Late" career which contains very evenly distributed songs. This could also be because of the small amount of songs that fall into the "Late" category, consisting of 12 songs (n > 30 is normally needed in order to create a sufficient distribution).
+The Beatles have mostly used major keys in their work, which is consistant throughout their whole career. During all parts of their career the Beatles seem to maintain the use of the same keys in their songs. It's only the "Late" career which contains very evenly distributed songs.  This could also be because of the small amount of songs that fall into the "Late" category, consisting of 12 songs (n > 30 is normally needed in order to create a sufficient distribution).
 
 
 # Björk {.storyboard data-navmenu="Musical Journey"}
@@ -655,8 +655,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ***
 
-Sidebar text
-
+Björk seems to have a very concise use of tempo and track duration throughout here whole career, with all density plots overlapping except for some outliers.
 
 ### A key career change?
 ```{r bjork_keys, echo=FALSE}
@@ -665,7 +664,7 @@ interactive_plot
 ```
 
 ***
-Sidebar text
+In her early and growth years, Björk looks to use roughly the same keys for her songs. Only her most recent work, there is a clear difference in the use of keys. She uses around the same amount of minor modes as she does for major ones.
 
 # Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
 ### About the artist

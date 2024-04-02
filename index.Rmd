@@ -201,7 +201,7 @@ get_pr <- function(fit) {
 
 
 # Introduction {.storyboard }
-### Introduction  
+### What is this all about?  
 ```{r intro_overview, echo=FALSE}
 image_path <- "index_files/figure-html/artists_grid.png"  # Replace with the actual path to your PNG image file
 
@@ -219,15 +219,15 @@ rasterImage(image, 0, 0, 1, 1)  # Display the image
 
 
 ***
-On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API.
+On this website we explore my selected corpus and aim to research the musical journey of artist throughout their careers by leveraging the track audio featurs from the Spotify API. A little bit about me and why I've chosen this project. I'm a musician myself, playing in a band as rythm guitarist and piano player. Being in a band and creating music I've been fascinated by "finding an own sound" or "trying different things", hence I was interested in the musical journey of different artists.
 
-This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. This selection is carefully chosen to enable a comprehensive analysis of musical evolution and the influence of cultural and socio-political contexts on musical expression.
+This corpus encompasses a diverse array of music from nine artists: The Beatles, Red Hot Chili Peppers (RHCP), Fela Kuti, Daft Punk, Björk, Miles Davis, Radiohead, Youssou N'Dour, and Caetano Veloso. It started with music of just RHCP and The Beatles, as I was curious if the  spans various genres, including rock, funk, Afrobeat, electronic, jazz, alternative, Mbalax, and Tropicália, representing significant periods and shifts in the music industry. I've partially chosen these artists as a lot are a personal preference. I do however believe that the corpus can enable a comprehensive analysis on the musical journey of artists.
 
 The structure of the corpus, centered around studio-recorded albums, allows for comparisons of musical styles and thematic content. The Beatles and RHCP offer a lens into the development of rock and its subgenres, while Fela Kuti and Miles Davis add the complexity of Afrobeat and jazz. Daft Punk and Björk extend the exploration to the innovative realms of electronic music, and Radiohead combines rock with electronic sounds. The inclusion of Youssou N'Dour and Caetano Veloso incorporates the unique rhythms and melodies of Senegal and Brazil, respectively, enriching the corpus's cultural diversity.
 
-The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends, contrasts, and the dynamic relationship between music and its cultural backdrop. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different regions and times.
+The albums selected showcase each artist's characteristic style and include tracks that offer a contrast to their typical sound, providing a broad base for analysis. This approach, focusing on studio albums, emphasizes the nuances of production choices and artist intentions. While this corpus is substantial, it remains selective, aiming to reveal trends and contrasts within the music. The objective is to deepen the understanding of how music acts as a reflection of and a force upon the zeitgeist across different genres and times.
 
-### Artist overview
+### Dimensions of artists 
 
 ```{r artist_overview, echo=FALSE, fig_width=5,fig.height=4}
 corpus_long <- corpus_by_artist %>%
@@ -241,7 +241,7 @@ catalog_bar_charts <- ggplot(corpus_long, aes(x = reorder(artist, Value), y = Va
   geom_bar(stat = "identity") +
   facet_wrap(~ Metric, scales = "free_x", labeller = labeller(Metric = as_labeller(my_labels))) +
   theme_minimal() +
-  labs(x = "Artist Name", y = " ", title = "Catalog size by artist", fill = "Artist") +  # Added a plot title
+  labs(x = "Artist", y = " ", title = "Catalog size by artist", fill = "Artist") +  # Added a plot title
   coord_flip() +
   theme(axis.text.y = element_text(angle = 45, hjust = 1))
 
@@ -249,7 +249,7 @@ ggplotly(catalog_bar_charts)
 ```
 
 ***
-The dual bar chart provides a comparative analysis of several artists within a music corpus. On the left side, the average duration per track is illustrated, where Caetano Veloso shows a relatively standard track length yet possesses an expansive catalog, hinting at a prolific career. In contrast, Fela Kuti's representation reveals a smaller number of total tracks, but each with a significantly extended duration, perhaps indicating extended instrumental characteristics of his Afrobeat style. Miles Davis's position in the middle reflects a balance within these outliers, with a high average track length consistent with jazz compositions and a substantial total track count, underscoring his extensive contribution to music. This information is crucial for corpus analysis as it underscores stylistic choices that influence various aspects of music analysis.
+This visualizations shows the catalog size of artists within my corpus. On the left side, the average duration per track is illustrated, where Caetano Veloso shows a relatively standard track length yet possesses an expansive catalog. In contrast, Fela Kuti's representation reveals a smaller number of total tracks, but each with a significantly extended duration, perhaps indicating extended instrumental characteristics of his Afrobeat style. Miles Davis's position in the middle reflects a balance within these outliers, with a high average track length consistent with jazz compositions and a substantial total track count, underscoring his extensive contribution to music. This information is essenstial to explain for construct validity in this corpus analysis as it influences various aspects of music analysis. One could imagine that standard measures of Spotify are less reliable for longer pieces of music, as Spotify's main focus is Pop music.
 
 ### Which artist makes the most happy and energetic songs?
 
@@ -300,7 +300,7 @@ The plot included in this repository displays the distribution of track descript
 
 Upon a close look of the plot, the albums of each artist seem to cluster both together, where Miles Davis and Björk have the most spread out descriptive variables. Artist like the Beatles, Daft Punk, Fela Kuti and RHCP (Red Hot Chili Peppers) seem to have the most concise album audio features. Youssou N'Dour and Caetano Veloso seem to stay in the middle artists like Miles Davis & Björk and artists with concise album audio features.
 
-### Detailed artist overview
+### Deepdive into valence and energy per artist
 
 ```{r overview, echo=FALSE}
 # Static plot code here
@@ -326,10 +326,9 @@ track_plotly
 ```
 
 ***
+I wanted to show this visual to explore the variety of music per artist. In general there seem to be a positive correlation between valence and energy for all artists. There are however some artists like Björk, Caetano Veloso and RHCP who seem to create songs with a strange relationship between valence and energy. My eye fell on the valence and energy distribution of the Red Hot Chili Peppers, which' catalog exists of the most high energy songs while still keeping a relatively equal distribution of those songs with their valence score.
 
-Sidebar text
-
-### Keygrams 
+### What's the key? 
 
 
 ```{r, echo=FALSE}
@@ -359,9 +358,9 @@ key_labels_x <- c("C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B
 key_mode_plot <- ggplot(corpus_proportions, aes(x=key, y=proportion, fill=mode)) +
   geom_bar(stat="identity", position="stack") +
   scale_x_discrete(labels=key_labels_x) +  # Assuming key_labels_x is defined as before
-  scale_fill_manual(values=c("red", "blue"), labels=c("minor", "major")) +
+  scale_fill_manual(values=c("blue", "orange"), labels=c("minor", "major")) +
   facet_wrap(~ playlist_name, scales="free_y") +
-  labs(x="Key", y="Proportion", title="Proportions of Keys and Modes in Artist Discographies") +
+  labs(x="Key", y="Proportion", title="Proportions of Keys and Modes in Artist Discographies", fill = "Mode (0 for minor and 1 for major)") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle=45, hjust=1))
 
@@ -381,7 +380,7 @@ For me, the most interesting distribution of keys is the one of the Beatles. The
 
 Upon closer inspection, we see the roughly the same distribution for the following artists: Caetano Veloso, Radiohead and RHCP. These artist and the beatles roughly show the same pattern of often-used keys: C, D, E, F, G, A, and B.
 
-### Tempograms
+### What's the tempo?
 
 ```{r, echo=FALSE, fig.height=6}
 
@@ -430,12 +429,51 @@ While the specific tempos of their songs might occasionally align, it's essentia
 
 In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
 
-# Artists {.storyboard data-navmenu="Musical Journey"}
-### About page
-
-
-
+# Methodology {.storyboard data-navmenu="Musical Journey"}
 ### Methodology
+```{r keys_career, include=FALSE}
+analyze_artist_corpus <- function(artist_corpus) {
+  # Convert mode to a factor
+  artist_corpus$mode <- as.factor(artist_corpus$mode)
+  
+  # Calculate the count of tracks grouped by various attributes
+  artist_corpus_counts <- artist_corpus %>%
+    group_by(playlist_name, key, mode, career_cat) %>%
+    summarise(count = n(), .groups = 'drop')
+  
+  # Calculate the total count of tracks for each artist
+  total_counts <- artist_corpus %>%
+    group_by(playlist_name) %>%
+    summarise(total = n(), .groups = 'drop')
+  
+  # Merge the counts with the total and calculate the proportion
+  artist_corpus_proportions <- merge(artist_corpus_counts, total_counts, by = "playlist_name") %>%
+    mutate(proportion = count / total)
+  
+  # Ensure 'key' is a factor with levels in the correct order for plotting
+  artist_corpus_proportions$key <- factor(artist_corpus_proportions$key, levels = as.character(0:11))
+  
+  # Define key labels for plotting
+  key_labels_x <- c("C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B")
+  
+  # Create the ggplot
+  key_mode_plot <- ggplot(artist_corpus_proportions, aes(x=key, y=proportion, fill=mode)) +
+    geom_bar(stat="identity", position="stack") +
+    scale_x_discrete(labels=key_labels_x) +
+    scale_fill_manual(values=c("blue", "orange"), labels=c("minor", "major")) +
+    facet_wrap(~ career_cat, scales="free_y") +
+    labs(x="Key", y="Proportion", title="Proportions of Keys and Modes in Artist Discographies", fill = "Mode (0: minor, 1: major)") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle=45, hjust=1))
+  
+  # Convert to plotly object for interactivity (optional)
+  interactive_plot <- ggplotly(key_mode_plot)
+  
+  # Return the interactive plot
+  return(interactive_plot)
+}
+
+```
 ```{r career_cat_distribution_plot, echo=FALSE, fig.width=10, fig.height=6}
   
 career_category_distribution <- ggplot(album_corpus_analysis, aes(x = career_cat, fill = career_cat)) +
@@ -449,13 +487,8 @@ ggplotly(career_category_distribution)
 
 
 ***
-
-Sidebar
-
-### Music
-```{r}
-1+1
-```
+For each artist in my corpus the following topics are discussed: energy, valence, tempo, track length, key. By combining these topics we create a fundament to try to understand the music of an artist.  
+In order to create insights in the musical journey of artists I've adjusted the corpus for every artist in 4 "career categories"
 
 
 # Beatles {.storyboard data-navmenu="Musical Journey"}
@@ -543,6 +576,17 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 sidebar text
 
+
+### A key career change?
+```{r beatles_key, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(beatles_corpus)
+interactive_plot
+```
+
+***
+Sidebar text
+
+
 # Björk {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
@@ -610,6 +654,16 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ***
 
+Sidebar text
+
+
+### A key career change?
+```{r bjork_keys, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(bjork_corpus)
+interactive_plot
+```
+
+***
 Sidebar text
 
 # Caetano Veloso {.storyboard data-navmenu="Musical Journey"}
@@ -680,6 +734,16 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 ***
 Sidebar text
+
+### A key career change?
+```{r caetano_keys, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(caetano_veloso_corpus)
+interactive_plot
+```
+
+***
+Sidebar
+
 
 # Daft Punk {.storyboard data-navmenu="Musical Journey"}
 
@@ -752,6 +816,16 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ***
 
 Sidebar text
+
+### A key career change?
+```{r daft_keys, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(daft_punk_corpus)
+interactive_plot
+```
+
+***
+Sidebar text
+
 
 # Fela Kuti {.storyboard data-navmenu="Musical Journey"}
 
@@ -827,6 +901,16 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ***
 Sidebar text
 
+### A key career change?
+```{r}
+interactive_plot <- analyze_artist_corpus(fela_kuti_corpus)
+interactive_plot
+
+```
+
+***
+Sidebar text
+
 # Miles Davis {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
@@ -896,6 +980,16 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ***
 Sidebar text
+
+### A key career change?
+```{r miles_keys, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(miles_davis_corpus)
+interactive_plot
+```
+
+***
+Sidebar
+
 
 # Radiohead {.storyboard data-navmenu="Musical Journey"} 
 ### About the artist
@@ -967,6 +1061,16 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ***
 Sidebar text
 
+### A key career change?
+```{r radiohead_keys, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(radiohead_corpus)
+interactive_plot
+```
+
+***
+Sidebar
+
+
 # RHCP {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
@@ -1037,6 +1141,13 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ***
 Sidebar text
+
+### A key career change?
+```{r rhcp_keys, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(rhcp_corpus)
+interactive_plot
+```
+
 
 # Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
 
@@ -1112,7 +1223,39 @@ Sidebar text
 
 
 
+### A key career change?
+```{r youssou_keys, echo=FALSE}
+interactive_plot <- analyze_artist_corpus(youssou_corpus)
+interactive_plot
+```
+
+***
+Sidebar
+
 # Conclusions {.storyboard}
+### Valence and energy deepdive 
+
+```{r valence_energy_deepdive, echo=FALSE}
+track_plot <- ggplot(corpus, aes(x = energy, y = valence, color = career_cat, text = track_info, alpha = 0.9)) +
+  geom_point() +
+  facet_wrap(~artist) +
+  labs(title = "Valence vs Energy colored by danceability per artist", x = "Energy", y = "Valence") + # Title for the color scale
+  theme_minimal() +
+  guides(alpha = none) + # Optionally, remove the alpha guide if not needed
+  theme(legend.text = element_text(size = 12),  # Increase legend text size
+        legend.key.size = unit(1, "lines"),  # Increase legend key size
+        legend.position = "none")  # Remove the legend
+
+# Convert to plotly object with tooltips
+track_plotly <- ggplotly(track_plot, tooltip = "text")
+
+# Print the plotly plot
+track_plotly
+```
+
+***
+Sidebar
+
 ### Valence and energy throughout the years
 ```{r conclusion_valence_energy, echo=FALSE}
 artist_album_corpus <- corpus %>%
@@ -1166,7 +1309,7 @@ ggplotly(facet_wrapped_tempo_duration)
 Sidebar text
 
 
-# Clustering (w12) {.storyboard data-navmenu=Homework}
+# Clustering (w12) {.storyboard data-navmenu="Required visuals"}
 ### Histogram
 
 ```{r, include=FALSE}
@@ -1254,7 +1397,7 @@ Sidebar text
 ***
 Sidebar text
 
-# Tempigram (w11) {.storyboard data-navmenu=Homework}
+# Tempigram (w11) {.storyboard data-navmenu="Required visuals"}
 ### Histogram
 
 ```{r, echo=FALSE, fig.height=6}
@@ -1304,7 +1447,7 @@ While the specific tempos of their songs might occasionally align, it's essentia
 
 In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
 
-# How do two outliers of my corpus changed their energy and valence within their songs?  (w9){.storyboard data-navmenu=Homework} 
+# How do two outliers of my corpus changed their energy and valence within their songs?  (w9){.storyboard data-navmenu="Required visuals"} 
 
 ### How do the chroma features changed their energy and valence within their songs? 
 ```{r data_setup, include=FALSE}
@@ -1546,7 +1689,7 @@ Overall, we can argue that a high diversity in pitch classes can clutter the sel
 
 
 
-# Keygrams, histograms and stdev (w10) {.storyboard data-navmenu=Homework} 
+# Keygrams, histograms and stdev (w10) {.storyboard data-navmenu="Required visuals"} 
 ### Keygrams
 ```{r chord_template, include=FALSE}
 circshift <- function(v, n) {

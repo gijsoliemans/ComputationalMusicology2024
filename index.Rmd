@@ -1134,7 +1134,8 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Sidebar text
+Both measures, energy & valence, have not significantly changed throughout the career of the RHCP. Their energy scores the highest with an average of above 0,8.
+
 
 ### How have tempo and track duration changed?
 ```{r rhcp_tempo_duration, fig.width=10}
@@ -1146,7 +1147,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
-Sidebar text
+As the average tempo has shifted a bit througout RHCP their career, it has not for their average track duration. Last topic has been cenetered around 4 minutes for their whole career.
 
 ### A key career change?
 ```{r rhcp_keys, echo=FALSE}
@@ -1154,6 +1155,8 @@ interactive_plot <- analyze_artist_corpus(rhcp_corpus)
 interactive_plot
 ```
 
+***
+The only significant shift in these keygram plots are the occurences of minor modes which has grown throughout the career of the Red Hot Chili Peppers.  
 
 # Youssou N'Dour {.storyboard data-navmenu="Musical Journey"}
 
@@ -1200,7 +1203,6 @@ mean_metrics <- full_join(mean_energy, mean_valence, by = "career_cat")
 mean_metrics_long <- mean_metrics %>%
   pivot_longer(cols = -career_cat, names_to = "Metric", values_to = "Value")
 
-print(mean_metrics_long)
 # Plot
 grouped_bar_chart <- ggplot(mean_metrics_long, aes(x = career_cat, y = Value, fill = Metric)) +
   geom_col(position = position_dodge()) +  # Use position_dodge() to side-by-side the bars
@@ -1211,8 +1213,10 @@ grouped_bar_chart <- ggplot(mean_metrics_long, aes(x = career_cat, y = Value, fi
 ggplotly(grouped_bar_chart)
 
 ```
+
 ***
-Sidebar text
+Youssou N'Dour's average energy and valence scores have stayed roughly the same throughout his career. This could be because of the Mbalax genre which Youssou N'Dour is most famous for.
+
 ### How have tempo and track duration changed?
 ```{r youssou_tempo_duration, fig.width=10}
 # Use the function to create plots
@@ -1224,7 +1228,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 
 ***
-Sidebar text
+Also the tempo and track duration distributions have stayed roughly the same throughout his career. This could also again be because of the Mbalax genre boundaries in which Youssou N'Dour has to stay.
 
 
 
@@ -1236,7 +1240,7 @@ interactive_plot
 ```
 
 ***
-Sidebar
+As well for the keygrams for each part of his career, they've stayed roughly the same. His growth period is the only remarkablegraph, but it could be because of the small amount of tracks Youssou N'Dour released in that period.
 
 # Conclusions {.storyboard}
 ### Valence and energy deepdive 

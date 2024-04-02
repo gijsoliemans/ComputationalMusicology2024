@@ -722,6 +722,9 @@ ggplotly(grouped_bar_chart)
 
 ```
 
+***
+Caetano Veloso is one of the few artist to have kept a very consistant level of valence and energy throughout is whole career. 
+
 ### How have tempo and track duration changed?
 ```{r caetano_tempo_duration, fig.width=10}
 # Use the function to create plots
@@ -732,8 +735,9 @@ duration_plot <- create_density_plot(caetano_veloso_corpus, "track_duration_minu
 plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ```
+
 ***
-Sidebar text
+Tempo and track duration distributions per career category don't seem to have shifted throughout Caetano Veloso's career.
 
 ### A key career change?
 ```{r caetano_keys, echo=FALSE}
@@ -742,19 +746,19 @@ interactive_plot
 ```
 
 ***
-Sidebar
+Caetano Veloso generally uses the same distribution of keys throughout his whole career, with an equal distriubtion of minor and major modes.
 
 
 # Daft Punk {.storyboard data-navmenu="Musical Journey"}
 
 ### About the artist
-```{r, include=FALSE}
+```{r, echo=FALSE}
 daft_punk_corpus <- corpus %>%
   filter(artist == "Daft Punk")
 
 career_category_distribution <- ggplot(daft_punk_corpus, aes(x = career_cat, fill = career_cat)) +
     geom_bar() +
-    labs(y = "Count", fill = "Career Category") +
+    labs(x = "Career Category", y = "Count", fill = "Career Category") +
     theme_minimal()
 
 ggplotly(career_category_distribution)
@@ -800,7 +804,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Sidebar text
+Throughout their career Daft Punk' songs have descended in valence and energy. As their latest work was more orchestral and diverse per track, it makes sense to have a lower average of valence and energy. 
 
 ### How have tempo and track duration changed?
 ```{r daft_tempo_duration, fig.width=10}
@@ -815,7 +819,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 
 ***
 
-Sidebar text
+While the early Daft Punk songs where super centered around 130 BPM, they've shifted to a wider range of tempo throughout their career. Track duration stayed generally the same througout their career.
 
 ### A key career change?
 ```{r daft_keys, echo=FALSE}
@@ -824,7 +828,7 @@ interactive_plot
 ```
 
 ***
-Sidebar text
+An interesting view from this visual is the distribution of keys in the growth years of Daft Punk, where not all keys where used. They did however keep around the same distribution of minor and major modes troughout their career.
 
 
 # Fela Kuti {.storyboard data-navmenu="Musical Journey"}
@@ -1447,7 +1451,7 @@ While the specific tempos of their songs might occasionally align, it's essentia
 
 In summary, although Björk and Radiohead might occasionally align in terms of tempo, the context in which they employ these tempos—along with their distinct approaches to melody, harmony, and production—ensures their music remains uniquely identifiable.
 
-# How do two outliers of my corpus changed their energy and valence within their songs?  (w9){.storyboard data-navmenu="Required visuals"} 
+# Chroma features?  (w9){.storyboard data-navmenu="Required visuals"} 
 
 ### How do the chroma features changed their energy and valence within their songs? 
 ```{r data_setup, include=FALSE}

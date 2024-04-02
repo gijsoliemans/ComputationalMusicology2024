@@ -550,7 +550,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Sidebar text
+For The Beatles we see a slight drop in valence through their career while energy stays roughly the same. The high spike of valence in their early years is fitting with their rock&roll'ish songs during those years.
 
 ### How have tempo and track duration changed?
 ```{r beatles_tempo_duration, echo=FALSE, fig.width=10}
@@ -576,8 +576,7 @@ plot_grid(tempo_plot, duration_plot, ncol = 1)
 ```
 ***
 
-sidebar text
-
+The music of the Beatles in their early years looks centered in regards to track duration and tempo. You can see their average track duration shifting upwards (and also more diverse) during their career. The tempo of songs also continued to diversity as their career progressed.
 
 ### A key career change?
 ```{r beatles_key, echo=FALSE}
@@ -586,7 +585,7 @@ interactive_plot
 ```
 
 ***
-Sidebar text
+During all parts of their career the Beatles seem to maintain the use of the same keys in their songs. It's only the "Late" career which contains very evenly distributed songs. This could also be because of the small amount of songs that fall into the "Late" category, consisting of 12 songs (n > 30 is normally needed in order to create a sufficient distribution).
 
 
 # Björk {.storyboard data-navmenu="Musical Journey"}
@@ -643,7 +642,7 @@ ggplotly(grouped_bar_chart)
 ```
 
 ***
-Sidebar text
+Throughout her career Björk began to make lower energy songs, while maintaining roughly the same valence score. 
 
 ### How have tempo and track duration changed?
 ```{r bjork_tempo_duration, fig.width=10}
